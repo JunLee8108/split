@@ -17,6 +17,7 @@ struct PlanListView: View {
     @State private var activePlan: IntervalPlan?
     @State private var isCreating = false
     @State private var isBrowsingTemplates = false
+    @State private var isShowingPaceTable = false
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
 
@@ -28,6 +29,9 @@ struct PlanListView: View {
         NavigationStack {
             List {
                 ScreenHeader(eyebrow: Date.now.formatted(.dateTime.month().day().weekday(.wide))) {
+                    CircleIconButton(systemImage: "tablecells", label: "페이스 표") {
+                        isShowingPaceTable = true
+                    }
                     CircleIconMenu(systemImage: "plus", label: "플랜 추가") {
                         Button {
                             isCreating = true
@@ -125,6 +129,9 @@ struct PlanListView: View {
             }
             .sheet(isPresented: $isBrowsingTemplates) {
                 TemplateLibraryView()
+            }
+            .sheet(isPresented: $isShowingPaceTable) {
+                PaceTableView(meters: 400, allowsDistanceChange: true)
             }
         }
     }

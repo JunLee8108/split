@@ -70,7 +70,9 @@ struct ScreenHeader<Trailing: View>: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
             Spacer()
-            trailing
+            HStack(spacing: 8) {
+                trailing
+            }
         }
         .frame(minHeight: 44)
         .padding(.horizontal, 4)
