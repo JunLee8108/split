@@ -26,73 +26,96 @@ struct PlanListView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: Metrics.cardSpacing) {
-                    ScreenHeader(eyebrow: Date.now.formatted(.dateTime.month().day().weekday(.wide))) {
-                        CircleIconMenu(systemImage: "plus", label: "플랜 추가") {
-                            Button {
-                                isCreating = true
-                            } label: {
-                                Label("직접 만들기", systemImage: "square.and.pencil")
-                            }
-                            Button {
-                                isBrowsingTemplates = true
-                            } label: {
-                                Label("템플릿에서 고르기", systemImage: "square.grid.2x2")
-                            }
+            List {
+                ScreenHeader(eyebrow: Date.now.formatted(.dateTime.month().day().weekday(.wide))) {
+                    CircleIconMenu(systemImage: "plus", label: "플랜 추가") {
+                        Button {
+                            isCreating = true
+                        } label: {
+                            Label("직접 만들기", systemImage: "square.and.pencil")
+                        }
+                        Button {
+                            isBrowsingTemplates = true
+                        } label: {
+                            Label("템플릿에서 고르기", systemImage: "square.grid.2x2")
                         }
                     }
+                }
+                .cardRow(top: 8, bottom: Metrics.headerGap)
 
-                    if let featured {
-                        NavigationLink(value: featured) {
-                            HeroPlanCard(plan: featured, unit: unit) {
-                                activePlan = featured
-                            }
+                if let featured {
+                    NavigationLink(value: featured) {
+                        HeroPlanCard(plan: featured, unit: unit) {
+                            activePlan = featured
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .cardRow()
+                }
+
+                if plans.isEmpty {
+                    EmptyCard(
+                        systemImage: "figure.run",
+                        title: "첫 플랜을 골라 보세요",
+                        message: "400m 반복, 야소 800, 파틀렉 같은 템플릿에서 고르거나 직접 구간을 짤 수 있어요.",
+                        actionTitle: "템플릿에서 고르기",
+                        action: { isBrowsingTemplates = true },
+                        secondaryTitle: "직접 만들기",
+                        secondaryAction: { isCreating = true }
+                    )
+                    .cardRow()
+                } else {
+                    SectionLabel("내 플랜")
+                        .cardRow(bottom: 4)
+                    ForEach(plans) { plan in
+                        NavigationLink(value: plan) {
+                            PlanCard(plan: plan, unit: unit)
                         }
                         .buttonStyle(.plain)
-                    }
-
-                    if plans.isEmpty {
-                        EmptyCard(
-                            systemImage: "figure.run",
-                            title: "첫 플랜을 골라 보세요",
-                            message: "400m 반복, 야소 800, 파틀렉 같은 템플릿에서 고르거나 직접 구간을 짤 수 있어요.",
-                            actionTitle: "템플릿에서 고르기",
-                            action: { isBrowsingTemplates = true },
-                            secondaryTitle: "직접 만들기",
-                            secondaryAction: { isCreating = true }
-                        )
-                    } else {
-                        SectionLabel("내 플랜")
-                        ForEach(plans) { plan in
-                            NavigationLink(value: plan) {
-                                PlanCard(plan: plan, unit: unit)
+                        .cardRow()
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                activePlan = plan
+                            } label: {
+                                Label("시작", systemImage: "play.fill")
                             }
-                            .buttonStyle(.plain)
-                            .contextMenu {
-                                Button {
-                                    activePlan = plan
-                                } label: {
-                                    Label("시작", systemImage: "play.fill")
-                                }
-                                Button {
-                                    plan.duplicate(into: modelContext)
-                                } label: {
-                                    Label("복제", systemImage: "doc.on.doc")
-                                }
-                                Button(role: .destructive) {
-                                    modelContext.delete(plan)
-                                } label: {
-                                    Label("삭제", systemImage: "trash")
-                                }
+                            .tint(.run)
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                modelContext.delete(plan)
+                            } label: {
+                                Label("삭제", systemImage: "trash")
+                            }
+                            Button {
+                                plan.duplicate(into: modelContext)
+                            } label: {
+                                Label("복제", systemImage: "doc.on.doc")
+                            }
+                            .tint(.secondary)
+                        }
+                        .contextMenu {
+                            Button {
+                                activePlan = plan
+                            } label: {
+                                Label("시작", systemImage: "play.fill")
+                            }
+                            Button {
+                                plan.duplicate(into: modelContext)
+                            } label: {
+                                Label("복제", systemImage: "doc.on.doc")
+                            }
+                            Button(role: .destructive) {
+                                modelContext.delete(plan)
+                            } label: {
+                                Label("삭제", systemImage: "trash")
                             }
                         }
                     }
                 }
-                .padding(.horizontal, Metrics.screenPadding)
-                .padding(.top, 8)
-                .padding(.bottom, 24)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .background(Color.screenBackground)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: IntervalPlan.self) { plan in
