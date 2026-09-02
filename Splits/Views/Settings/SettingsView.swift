@@ -20,19 +20,29 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("표시") {
-                    Picker("거리 단위", selection: $unitRaw) {
+                Section {
+                    Picker(selection: $unitRaw) {
                         ForEach(DistanceUnit.allCases, id: \.rawValue) { unit in
                             Text(unit.label).tag(unit.rawValue)
                         }
+                    } label: {
+                        SettingsRowLabel(title: "거리 단위", systemImage: "ruler", tint: .gray)
                     }
-                    Toggle("세션 중 화면 켜 두기", isOn: $keepScreenOn)
+                    Toggle(isOn: $keepScreenOn) {
+                        SettingsRowLabel(title: "세션 중 화면 켜 두기", systemImage: "sun.max.fill", tint: .gray)
+                    }
+                } header: {
+                    Text("표시")
                 }
 
                 Section {
-                    Toggle("음성 안내", isOn: $voiceEnabled)
-                    Stepper("종료 \(countdownSeconds)초 전 카운트다운", value: $countdownSeconds, in: 3...10)
-                        .disabled(!voiceEnabled)
+                    Toggle(isOn: $voiceEnabled) {
+                        SettingsRowLabel(title: "음성 안내", systemImage: "speaker.wave.2.fill", tint: .run)
+                    }
+                    Stepper(value: $countdownSeconds, in: 3...10) {
+                        SettingsRowLabel(title: "종료 \(countdownSeconds)초 전 카운트다운", systemImage: "timer", tint: .run)
+                    }
+                    .disabled(!voiceEnabled)
                 } header: {
                     Text("안내")
                 } footer: {
@@ -41,18 +51,20 @@ struct SettingsView: View {
 
                 if health.isAvailable {
                     Section {
-                        Toggle("Apple 건강에 저장", isOn: $saveToHealth)
-                            .onChange(of: saveToHealth) { _, enabled in
-                                guard enabled else { return }
-                                Task {
-                                    do {
-                                        try await health.requestAuthorization()
-                                        healthAuthorizationFailed = !health.isAuthorized
-                                    } catch {
-                                        healthAuthorizationFailed = true
-                                    }
+                        Toggle(isOn: $saveToHealth) {
+                            SettingsRowLabel(title: "Apple 건강에 저장", systemImage: "heart.fill", tint: .rest)
+                        }
+                        .onChange(of: saveToHealth) { _, enabled in
+                            guard enabled else { return }
+                            Task {
+                                do {
+                                    try await health.requestAuthorization()
+                                    healthAuthorizationFailed = !health.isAuthorized
+                                } catch {
+                                    healthAuthorizationFailed = true
                                 }
                             }
+                        }
                     } header: {
                         Text("건강")
                     } footer: {
@@ -64,11 +76,22 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("정보") {
-                    LabeledContent("버전", value: versionString)
+                Section {
+                    LabeledContent {
+                        Text(versionString)
+                            .foregroundStyle(.secondary)
+                    } label: {
+                        SettingsRowLabel(title: "버전", systemImage: "info", tint: .gray)
+                    }
+                } footer: {
+                    Text("Splits · GPS 인터벌 러닝")
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 8)
                 }
             }
-            .navigationTitle("설정")
+            .scrollContentBackground(.hidden)
+            .background(Color.screenBackground)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 

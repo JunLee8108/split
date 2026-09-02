@@ -25,6 +25,7 @@ enum AppSettings {
     static let countdownSecondsKey = "settings.countdownSeconds"
     static let keepScreenOnKey = "settings.keepScreenOn"
     static let saveToHealthKey = "settings.saveToHealth"
+    static let lastPlanNameKey = "state.lastPlanName"
 
     static let defaultCountdownSeconds = 5
 
