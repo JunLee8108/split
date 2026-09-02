@@ -19,14 +19,12 @@ struct SessionSummaryView: View {
         NavigationStack {
             List {
                 Section {
-                    HStack(alignment: .top, spacing: 0) {
-                        SummaryStat(value: Formatters.distanceValue(summary.totalDistance, unit: unit).value,
-                                    label: Formatters.distanceValue(summary.totalDistance, unit: unit).unit)
-                        SummaryStat(value: Formatters.clock(summary.movingTime), label: "시간")
-                        SummaryStat(value: Formatters.pace(summary.averagePace, unit: unit), label: "평균 페이스")
-                    }
-                    .padding(.vertical, 8)
-                    .listRowBackground(Color.clear)
+                    SummaryStatsRow(
+                        distance: summary.totalDistance,
+                        movingTime: summary.movingTime,
+                        averagePace: summary.averagePace,
+                        unit: unit
+                    )
                     if let goals = GoalSummary.compute(for: summary.laps) {
                         LabeledContent("목표 달성", value: "\(goals.met) / \(goals.total)")
                     }
@@ -36,6 +34,8 @@ struct SessionSummaryView: View {
                     if summary.laps.isEmpty {
                         Text("기록된 구간이 없어요.")
                             .foregroundStyle(.secondary)
+                    } else {
+                        LapTableHeader()
                     }
                     ForEach(summary.laps, id: \.index) { lap in
                         LapRow(lap: lap, unit: unit, highlight: highlight(for: lap))
@@ -64,27 +64,5 @@ struct SessionSummaryView: View {
 
     private func highlight(for lap: LapRecord) -> LapHighlight? {
         LapHighlight.compute(for: summary.laps)[lap.index]
-    }
-}
-
-private struct SummaryStat: View {
-    let value: String
-    let label: String
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .minimumScaleFactor(0.7)
-                .lineLimit(1)
-            Text(label)
-                .font(.caption2.weight(.medium))
-                .tracking(0.8)
-                .textCase(.uppercase)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
     }
 }

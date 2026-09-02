@@ -27,6 +27,56 @@ enum LapHighlight {
     }
 }
 
+/// 랩 표 열 제목. LapRow와 같은 폭을 쓴다.
+struct LapTableHeader: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("#")
+                .frame(width: 22, alignment: .trailing)
+            Text("구간")
+            Spacer()
+            Text("시간")
+            Text("페이스")
+                .frame(width: 76, alignment: .trailing)
+        }
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(.secondary)
+        .accessibilityHidden(true)
+    }
+}
+
+/// 기록 상세·세션 요약 상단의 요약 타일 3개. 단위는 숫자에 붙인다.
+struct SummaryStatsRow: View {
+    let distance: Double
+    let movingTime: TimeInterval
+    let averagePace: TimeInterval?
+    let unit: DistanceUnit
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            tile(Formatters.distance(distance, unit: unit), "거리")
+            tile(Formatters.clock(movingTime), "시간")
+            tile(Formatters.pace(averagePace, unit: unit), "평균 페이스")
+        }
+        .padding(.vertical, 6)
+    }
+
+    private func tile(_ value: String, _ label: String) -> some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.system(size: 26, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+            Text(label)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+    }
+}
+
 struct LapRow: View {
     let lap: LapRecord
     let unit: DistanceUnit
