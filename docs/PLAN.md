@@ -127,7 +127,7 @@ SplitsTests/       SegmentTrackerTests, WorkoutEngineTests, PaceMathTests
 - [x] Phase 2 — DistanceAccumulator / PaceCalculator / SegmentTracker / WorkoutEngine / LocationManager(CLLocationUpdate.liveUpdates + CLBackgroundActivitySession) / Announcer / WorkoutSession, 유닛 테스트 4파일
 - [x] Phase 3 — SessionView(진행 바·구간 배지·큰 숫자·지표 3개·일시정지/재개/길게 눌러 종료·두 번 탭 넘김), 플랜 상세 시작 버튼과 목록 스와이프 시작, 종료 요약 시트(저장/버리기). 실외 검증은 사용자 몫
 - [x] Phase 4 — PlanEditorView(초안 값 타입 편집, 저장 시에만 모델 반영), 구간 시트(종류·거리/시간·휠), 순서 변경·삭제, 반복, 워밍업·쿨다운, 예상치 실시간
-- [ ] Phase 5 — 세션 요약 시트, 기록 상세(랩 테이블 + 지도)
+- [x] Phase 5 — 기록 목록 날짜별 섹션 + Canvas 경로 스케치, WorkoutDetailView(구간 색 MapPolyline 지도 → 요약 3개 → 랩 테이블, 전체 화면 지도, 삭제), LapRow/LapHighlight 공용화
 - [ ] Phase 6 — HealthKit, 아이콘, 접근성, TestFlight
 
 메모

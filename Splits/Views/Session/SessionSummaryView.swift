@@ -59,54 +59,8 @@ struct SessionSummaryView: View {
         }
     }
 
-    /// 달리기 구간 중 가장 빠른 것과 느린 것. 셋 이상일 때만 표시한다.
     private func highlight(for lap: LapRecord) -> LapHighlight? {
-        let runs = summary.laps.filter { $0.kind == .run && $0.pace != nil }
-        guard runs.count >= 3, lap.kind == .run, let pace = lap.pace else { return nil }
-        let paces = runs.compactMap(\.pace)
-        if pace == paces.min() { return .fastest }
-        if pace == paces.max() { return .slowest }
-        return nil
-    }
-}
-
-enum LapHighlight {
-    case fastest
-    case slowest
-}
-
-struct LapRow: View {
-    let lap: LapRecord
-    let unit: DistanceUnit
-    var highlight: LapHighlight? = nil
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Text("\(lap.index + 1)")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.tertiary)
-                .frame(width: 22, alignment: .trailing)
-            StepBadge(kind: lap.kind)
-            Text(Formatters.target(lap.target, unit: unit))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Spacer()
-            Text(Formatters.clock(lap.duration))
-                .monospacedDigit()
-            Text(Formatters.pace(lap.pace, unit: unit))
-                .monospacedDigit()
-                .foregroundStyle(paceColor)
-                .frame(width: 64, alignment: .trailing)
-        }
-        .font(.body)
-    }
-
-    private var paceColor: HierarchicalShapeStyle {
-        switch highlight {
-        case .fastest?: .primary
-        case .slowest?: .secondary
-        case nil: lap.kind.isRun ? .primary : .tertiary
-        }
+        LapHighlight.compute(for: summary.laps)[lap.index]
     }
 }
 
