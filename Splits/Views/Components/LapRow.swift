@@ -45,15 +45,23 @@ struct LapRow: View {
             Spacer()
             Text(Formatters.clock(lap.duration))
                 .monospacedDigit()
-            HStack(spacing: 4) {
-                if let marker {
-                    Image(systemName: marker)
-                        .font(.caption2)
-                        .foregroundStyle(lap.kind.tint)
+            VStack(alignment: .trailing, spacing: 1) {
+                HStack(spacing: 4) {
+                    if let marker {
+                        Image(systemName: marker)
+                            .font(.caption2)
+                            .foregroundStyle(lap.kind.tint)
+                    }
+                    Text(Formatters.pace(lap.pace, unit: unit))
+                        .monospacedDigit()
+                        .foregroundStyle(paceStyle)
                 }
-                Text(Formatters.pace(lap.pace, unit: unit))
-                    .monospacedDigit()
-                    .foregroundStyle(paceStyle)
+                if let delta = Formatters.goalDelta(lap, unit: unit) {
+                    Text(delta)
+                        .font(.caption2.weight(.semibold))
+                        .monospacedDigit()
+                        .foregroundStyle(lap.goalMet == true ? lap.kind.tint : .secondary)
+                }
             }
             .frame(width: 76, alignment: .trailing)
         }
@@ -88,6 +96,18 @@ struct LapRow: View {
         case .slowest?: parts.append("가장 느림")
         case nil: break
         }
+        if let delta = Formatters.goalDelta(lap, unit: unit) {
+            parts.append("목표 대비 \(delta)")
+        }
         return parts.joined(separator: ", ")
+    }
+}
+
+/// 목표를 둔 달리기 구간 중 몇 개를 달성했는지.
+nonisolated enum GoalSummary {
+    static func compute(for laps: [LapRecord]) -> (met: Int, total: Int)? {
+        let withGoal = laps.filter { $0.kind == .run && $0.goalMet != nil }
+        guard !withGoal.isEmpty else { return nil }
+        return (withGoal.filter { $0.goalMet == true }.count, withGoal.count)
     }
 }

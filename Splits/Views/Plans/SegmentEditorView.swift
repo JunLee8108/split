@@ -2,7 +2,8 @@
 //  SegmentEditorView.swift
 //  Splits
 //
-//  구간 하나의 종류와 목표를 고르는 시트. 종류와 목표 방식은 세그먼트 컨트롤, 값은 휠.
+//  구간 하나의 종류·종료 기준·목표를 고르는 시트.
+//  목표는 거리 구간이면 시간, 시간 구간이면 거리. 고르는 즉시 환산 페이스가 보인다.
 //
 
 import SwiftUI
@@ -16,6 +17,10 @@ struct SegmentEditorView: View {
     @State private var isDistance: Bool
     @State private var meters: Double
     @State private var seconds: TimeInterval
+    @State private var hasGoal: Bool
+    @State private var goalSeconds: TimeInterval
+    @State private var goalMeters: Double
+    @State private var showPaceTable = false
     private let id: UUID
 
     init(segment: SegmentDraft, unit: DistanceUnit, onDone: @escaping (SegmentDraft) -> Void) {
@@ -26,46 +31,104 @@ struct SegmentEditorView: View {
         _isDistance = State(initialValue: segment.target.isDistance)
         _meters = State(initialValue: segment.target.meters ?? 400)
         _seconds = State(initialValue: segment.target.seconds ?? 90)
+        _hasGoal = State(initialValue: segment.goalValue != nil)
+        let goal = segment.goalValue
+        _goalSeconds = State(initialValue: segment.target.isDistance ? (goal ?? 90) : 90)
+        _goalMeters = State(initialValue: segment.target.isDistance ? 800 : (goal ?? 800))
     }
 
     private var target: SegmentTarget {
         isDistance ? .distance(meters) : .duration(seconds)
     }
 
+    private var goalValue: Double? {
+        guard hasGoal else { return nil }
+        return isDistance ? goalSeconds : goalMeters
+    }
+
+    private var goalPace: TimeInterval? {
+        GoalMath.pace(target: target, goalValue: goalValue)
+    }
+
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                Picker("종류", selection: $kind) {
-                    Text("달리기").tag(StepKind.run)
-                    Text("회복").tag(StepKind.rest)
-                }
-                .pickerStyle(.segmented)
+            Form {
+                Section {
+                    Picker("종류", selection: $kind) {
+                        Text("달리기").tag(StepKind.run)
+                        Text("회복").tag(StepKind.rest)
+                    }
+                    .pickerStyle(.segmented)
 
-                Picker("목표", selection: $isDistance) {
-                    Text("거리").tag(true)
-                    Text("시간").tag(false)
+                    Picker("종료 기준", selection: $isDistance) {
+                        Text("거리").tag(true)
+                        Text("시간").tag(false)
+                    }
+                    .pickerStyle(.segmented)
                 }
-                .pickerStyle(.segmented)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
 
-                Group {
+                Section {
                     if isDistance {
                         DistanceWheel(meters: $meters, unit: unit)
+                            .frame(height: 150)
                     } else {
                         DurationWheel(seconds: $seconds)
+                            .frame(height: 150)
+                    }
+                } header: {
+                    Text(isDistance ? "거리" : "시간")
+                }
+
+                Section {
+                    Toggle(isDistance ? "목표 시간" : "목표 거리", isOn: $hasGoal.animation())
+                    if hasGoal {
+                        if isDistance {
+                            DurationWheel(seconds: $goalSeconds)
+                                .frame(height: 150)
+                        } else {
+                            DistanceWheel(meters: $goalMeters, unit: unit)
+                                .frame(height: 150)
+                        }
+                        LabeledContent("예상 페이스") {
+                            Text(Formatters.paceBoth(goalPace))
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
+                        if isDistance {
+                            Button {
+                                showPaceTable = true
+                            } label: {
+                                Label("\(Formatters.distance(meters, unit: unit)) 페이스 표 보기", systemImage: "tablecells")
+                            }
+                        }
+                    }
+                } header: {
+                    Text("목표")
+                } footer: {
+                    Text(isDistance
+                         ? "이 거리를 몇 초에 뛸지 정합니다. 구간이 끝날 때 목표보다 빨랐는지 느렸는지 알려 줘요."
+                         : "이 시간 동안 얼마나 멀리 갈지 정합니다. 구간이 끝날 때 목표보다 더 갔는지 알려 줘요.")
+                }
+
+                Section {
+                    HStack(spacing: 8) {
+                        StepBadge(kind: kind)
+                        Text(Formatters.target(target, unit: unit))
+                            .font(.title3.weight(.semibold))
+                            .monospacedDigit()
+                        if let goalValue {
+                            Text("· 목표 \(Formatters.goal(target, goalValue: goalValue, unit: unit))")
+                                .font(.subheadline)
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
                     }
                 }
-                .frame(maxHeight: .infinity)
-
-                HStack(spacing: 8) {
-                    StepBadge(kind: kind)
-                    Text(Formatters.target(target, unit: unit))
-                        .font(.title3.weight(.semibold))
-                        .monospacedDigit()
-                }
-                .padding(.bottom, 8)
+                .listRowBackground(Color.clear)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
             .navigationTitle("구간")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -74,10 +137,16 @@ struct SegmentEditorView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("완료") {
-                        onDone(SegmentDraft(id: id, kind: kind, target: target))
+                        onDone(SegmentDraft(id: id, kind: kind, target: target, goalValue: goalValue))
                         dismiss()
                     }
                     .fontWeight(.semibold)
+                }
+            }
+            .sheet(isPresented: $showPaceTable) {
+                PaceTableView(meters: meters, selectedSeconds: hasGoal ? goalSeconds : nil) { picked in
+                    hasGoal = true
+                    goalSeconds = picked
                 }
             }
         }
@@ -105,7 +174,7 @@ struct DistanceWheel: View {
             }
         }
         .pickerStyle(.wheel)
-        .accessibilityLabel("목표 거리")
+        .accessibilityLabel("거리")
     }
 }
 

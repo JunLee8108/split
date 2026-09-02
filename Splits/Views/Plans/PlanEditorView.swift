@@ -123,7 +123,7 @@ struct PlanEditorView: View {
                         draft.segments[index] = updated
                     }
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
             }
             .onAppear {
                 if plan == nil {
@@ -143,9 +143,17 @@ struct SegmentDraftRow: View {
             StepBadge(kind: segment.kind)
             Text(segment.kind.koreanName)
             Spacer()
-            Text(Formatters.target(segment.target, unit: unit))
-                .monospacedDigit()
-                .foregroundStyle(.secondary)
+            VStack(alignment: .trailing, spacing: 1) {
+                Text(Formatters.target(segment.target, unit: unit))
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                if let goal = segment.goalValue {
+                    Text("목표 \(Formatters.goal(segment.target, goalValue: goal, unit: unit))")
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(.tertiary)
+                }
+            }
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.tertiary)

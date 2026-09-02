@@ -40,8 +40,15 @@ struct PlanDetailView: View {
                             .frame(width: 22, alignment: .trailing)
                         StepBadge(kind: step.kind, text: "\(step.kind.badge) \(step.ordinal)/\(step.ordinalTotal)")
                         Spacer()
-                        Text(Formatters.target(step.target, unit: unit))
-                            .font(.body.monospacedDigit())
+                        VStack(alignment: .trailing, spacing: 1) {
+                            Text(Formatters.target(step.target, unit: unit))
+                                .font(.body.monospacedDigit())
+                            if let goal = step.goalValue {
+                                Text("목표 \(Formatters.goal(step.target, goalValue: goal, unit: unit)) · \(Formatters.pace(step.goalPace, unit: unit))")
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
             }

@@ -29,6 +29,8 @@ nonisolated struct WorkoutSummary: Hashable, Sendable {
 }
 
 nonisolated enum WorkoutEvent: Hashable, Sendable {
+    /// 구간 하나가 끝났다. 다음 stepStarted 직전에 온다. 수동 종료로 잘린 마지막 랩에는 오지 않는다.
+    case lapCompleted(LapRecord)
     /// 새 구간이 시작됐다. 세션 시작 시 첫 구간에도 온다.
     case stepStarted(WorkoutStep)
     /// 시간 목표 구간의 종료 몇 초 전. 5, 4, 3, 2, 1 순서로 한 번씩.
@@ -240,7 +242,9 @@ final class WorkoutEngine {
 
     private func advance(carriedDistance: Double, carriedTime: TimeInterval, at now: Date) {
         if let tracker {
-            laps.append(tracker.lapRecord())
+            let lap = tracker.lapRecord()
+            laps.append(lap)
+            emit(.lapCompleted(lap))
         }
         let next = currentIndex + 1
         guard steps.indices.contains(next) else {

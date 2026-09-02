@@ -44,6 +44,9 @@ struct WorkoutDetailView: View {
                 }
                 .padding(.vertical, 6)
                 .listRowBackground(Color.clear)
+                if let goals = GoalSummary.compute(for: laps) {
+                    LabeledContent("목표 달성", value: "\(goals.met) / \(goals.total)")
+                }
             }
 
             Section {

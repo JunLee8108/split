@@ -12,18 +12,20 @@ struct SegmentDraft: Identifiable, Hashable {
     let id: UUID
     var kind: StepKind
     var target: SegmentTarget
+    var goalValue: Double?
 
-    init(id: UUID = UUID(), kind: StepKind, target: SegmentTarget) {
+    init(id: UUID = UUID(), kind: StepKind, target: SegmentTarget, goalValue: Double? = nil) {
         self.id = id
         self.kind = kind
         self.target = target
+        self.goalValue = goalValue
     }
 
     init(spec: SegmentSpec) {
-        self.init(kind: spec.kind, target: spec.target)
+        self.init(kind: spec.kind, target: spec.target, goalValue: spec.goalValue)
     }
 
-    var spec: SegmentSpec { SegmentSpec(kind: kind, target: target) }
+    var spec: SegmentSpec { SegmentSpec(kind: kind, target: target, goalValue: goalValue) }
 }
 
 struct PlanDraft: Hashable {

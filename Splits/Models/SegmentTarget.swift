@@ -81,3 +81,16 @@ nonisolated enum SegmentTarget: Hashable, Codable, Sendable {
         }
     }
 }
+
+/// 구간의 목표. 종료 조건이 아니라 "그 안에 얼마나 잘 뛰었나"의 기준이다.
+/// 거리 구간이면 목표 시간(초), 시간 구간이면 목표 거리(미터). 값 하나로 저장하고 해석은 target이 정한다.
+nonisolated enum GoalMath {
+    /// 목표 페이스(초/km).
+    static func pace(target: SegmentTarget, goalValue: Double?) -> TimeInterval? {
+        guard let goalValue, goalValue > 0 else { return nil }
+        switch target {
+        case .distance(let meters): return PaceMath.pace(distance: meters, duration: goalValue)
+        case .duration(let seconds): return PaceMath.pace(distance: goalValue, duration: seconds)
+        }
+    }
+}

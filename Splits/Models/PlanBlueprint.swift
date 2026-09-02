@@ -10,6 +10,8 @@ import Foundation
 nonisolated struct SegmentSpec: Hashable, Sendable {
     var kind: StepKind
     var target: SegmentTarget
+    /// 거리 구간이면 목표 시간(초), 시간 구간이면 목표 거리(미터). 없으면 nil.
+    var goalValue: Double? = nil
 
     static func run(meters: Double) -> SegmentSpec { .init(kind: .run, target: .distance(meters)) }
     static func run(seconds: TimeInterval) -> SegmentSpec { .init(kind: .run, target: .duration(seconds)) }
@@ -27,6 +29,11 @@ nonisolated struct WorkoutStep: Hashable, Sendable {
     var ordinal: Int
     /// 같은 종류의 총 개수. "달리기 3 / 8"의 8.
     var ordinalTotal: Int
+    /// 거리 구간이면 목표 시간(초), 시간 구간이면 목표 거리(미터).
+    var goalValue: Double? = nil
+
+    /// 목표 페이스(초/km).
+    var goalPace: TimeInterval? { GoalMath.pace(target: target, goalValue: goalValue) }
 }
 
 nonisolated struct PlanBlueprint: Hashable, Sendable {
@@ -53,41 +60,41 @@ nonisolated struct PlanBlueprint: Hashable, Sendable {
     /// 플랜을 실행 순서대로 펼친다.
     /// 마지막 반복의 끝이 회복 구간이면 하나 제거한다. 마지막 달리기 뒤에 쉬는 건 세션 종료다.
     func steps() -> [WorkoutStep] {
-        var raw: [(StepKind, SegmentTarget)] = []
+        var raw: [(kind: StepKind, target: SegmentTarget, goal: Double?)] = []
 
         if let warmupSeconds, warmupSeconds > 0 {
-            raw.append((.warmup, .duration(warmupSeconds)))
+            raw.append((.warmup, .duration(warmupSeconds), nil))
         }
 
         for _ in 0..<repeatCount {
             for segment in segments {
-                raw.append((segment.kind, segment.target))
+                raw.append((segment.kind, segment.target, segment.goalValue))
             }
         }
 
-        if raw.last?.0 == .rest {
+        if raw.last?.kind == .rest {
             raw.removeLast()
         }
 
         if let cooldownSeconds, cooldownSeconds > 0 {
-            raw.append((.cooldown, .duration(cooldownSeconds)))
+            raw.append((.cooldown, .duration(cooldownSeconds), nil))
         }
 
         var totals: [StepKind: Int] = [:]
-        for (kind, _) in raw {
-            totals[kind, default: 0] += 1
+        for entry in raw {
+            totals[entry.kind, default: 0] += 1
         }
 
         var counters: [StepKind: Int] = [:]
         return raw.enumerated().map { index, entry in
-            let (kind, target) = entry
-            counters[kind, default: 0] += 1
+            counters[entry.kind, default: 0] += 1
             return WorkoutStep(
-                kind: kind,
-                target: target,
+                kind: entry.kind,
+                target: entry.target,
                 index: index,
-                ordinal: counters[kind] ?? 1,
-                ordinalTotal: totals[kind] ?? 1
+                ordinal: counters[entry.kind] ?? 1,
+                ordinalTotal: totals[entry.kind] ?? 1,
+                goalValue: entry.goal
             )
         }
     }

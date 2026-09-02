@@ -27,6 +27,9 @@ struct SessionSummaryView: View {
                     }
                     .padding(.vertical, 8)
                     .listRowBackground(Color.clear)
+                    if let goals = GoalSummary.compute(for: summary.laps) {
+                        LabeledContent("목표 달성", value: "\(goals.met) / \(goals.total)")
+                    }
                 }
 
                 Section("구간") {
