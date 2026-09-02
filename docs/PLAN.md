@@ -135,3 +135,4 @@ SplitsTests/       SegmentTrackerTests, WorkoutEngineTests, PaceMathTests
 - 햅틱은 CoreHaptics 대신 UIKit 피드백 제너레이터를 썼다. 필요한 패턴이 단순해서 충분하다.
 - `replaceSegments`는 기존 Segment를 관계에서만 떼어낸다. 편집기(Phase 4)에서는 빠진 Segment를 명시적으로 delete 한다.
 - [x] 랜딩 개편 — 제목 없는 세 루트 화면. 플랜: 날짜 아이브로우 + 원형 +, 주황 히어로 카드(마지막 플랜, 시작), 플랜 카드(배지·반복·총량, 길게 눌러 시작/복제/삭제). 기록: 청록 주간 요약 카드(거리·세션·시간 + 7일 막대), 월별 카드. 설정: 색 아이콘 행, 하단 버전. 공용 DesignSystem(카드·헤더·섹션 라벨·통계 타일·빈 상태)
+- [x] 템플릿 라이브러리 — 내장 템플릿 7개(PlanTemplate + 설명), + 메뉴(직접 만들기 / 템플릿에서 고르기), 템플릿 시트에서 내 플랜으로 복사. 첫 실행 자동 삽입은 400m × 12, 3분/1분 × 6 두 개만
