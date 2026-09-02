@@ -67,7 +67,9 @@ nonisolated struct SegmentTracker: Hashable, Sendable {
             kind: step.kind,
             target: step.target,
             distance: distance,
-            duration: elapsed
+            duration: elapsed,
+            goalValue: step.goalValue,
+            ordinal: step.ordinal
         )
     }
 }
@@ -78,6 +80,26 @@ nonisolated struct LapRecord: Hashable, Sendable {
     var target: SegmentTarget
     var distance: Double
     var duration: TimeInterval
+    /// 거리 구간이면 목표 시간(초), 시간 구간이면 목표 거리(미터).
+    var goalValue: Double? = nil
+    /// 같은 종류 중 몇 번째인지. 저장된 기록에서는 0(모름).
+    var ordinal: Int = 0
 
     var pace: TimeInterval? { PaceMath.pace(distance: distance, duration: duration) }
+
+    var goalPace: TimeInterval? { GoalMath.pace(target: target, goalValue: goalValue) }
+
+    /// 목표 대비 차이. 시간 목표는 초(음수 = 빠름), 거리 목표는 미터(양수 = 더 감).
+    var goalDelta: Double? {
+        guard let goalValue, goalValue > 0 else { return nil }
+        switch target {
+        case .distance: return duration - goalValue
+        case .duration: return distance - goalValue
+        }
+    }
+
+    var goalMet: Bool? {
+        guard let delta = goalDelta else { return nil }
+        return target.isDistance ? delta <= 0 : delta >= 0
+    }
 }

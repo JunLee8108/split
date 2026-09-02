@@ -43,6 +43,12 @@ final class Announcer {
 
     func handle(_ event: WorkoutEvent) {
         switch event {
+        case .lapCompleted(let lap):
+            // 목표가 있는 달리기 구간만 결과를 읽는다. 없으면 다음 구간 안내로 충분하다.
+            if let phrase = resultPhrase(for: lap) {
+                speak(phrase)
+            }
+
         case .stepStarted(let step):
             speak(phrase(for: step))
             switch step.kind {
@@ -101,6 +107,29 @@ final class Announcer {
         case .cooldown:
             return "쿨다운, \(target)"
         }
+    }
+
+    /// "3번째 달리기, 1분 28초, 목표보다 2초 빠름"
+    func resultPhrase(for lap: LapRecord) -> String? {
+        guard lap.kind == .run, let delta = lap.goalDelta else { return nil }
+        var text = "\(lap.ordinal)번째 달리기, \(Formatters.spokenDuration(lap.duration))"
+        switch lap.target {
+        case .distance:
+            let seconds = abs(delta).rounded()
+            if seconds < 1 {
+                text += ", 목표 정확히"
+            } else {
+                text += ", 목표보다 \(Formatters.spokenDuration(seconds)) \(delta < 0 ? "빠름" : "느림")"
+            }
+        case .duration:
+            let meters = abs(delta).rounded()
+            if meters < 5 {
+                text += ", 목표 정확히"
+            } else {
+                text += ", 목표보다 \(Formatters.spokenDistance(meters, unit: unit)) \(delta > 0 ? "더" : "덜")"
+            }
+        }
+        return text
     }
 
     func speak(_ text: String, interrupting: Bool = false) {

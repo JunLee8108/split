@@ -42,7 +42,7 @@ final class IntervalPlan {
     var blueprint: PlanBlueprint {
         PlanBlueprint(
             name: name,
-            segments: orderedSegments.map { SegmentSpec(kind: $0.kind, target: $0.target) },
+            segments: orderedSegments.map { SegmentSpec(kind: $0.kind, target: $0.target, goalValue: $0.goalValue) },
             repeatCount: repeatCount,
             warmupSeconds: warmupSeconds,
             cooldownSeconds: cooldownSeconds
@@ -52,7 +52,7 @@ final class IntervalPlan {
     /// 구간 배열을 통째로 교체한다. order는 배열 순서로 다시 매긴다.
     func replaceSegments(with specs: [SegmentSpec]) {
         segments = specs.enumerated().map { index, spec in
-            Segment(kind: spec.kind, target: spec.target, order: index)
+            Segment(kind: spec.kind, target: spec.target, order: index, goalValue: spec.goalValue)
         }
     }
 
@@ -77,13 +77,16 @@ final class Segment {
     var targetKindRaw: String
     var targetValue: Double
     var order: Int
+    /// 거리 구간이면 목표 시간(초), 시간 구간이면 목표 거리(미터).
+    var goalValue: Double?
     var plan: IntervalPlan?
 
-    init(kind: StepKind, target: SegmentTarget, order: Int) {
+    init(kind: StepKind, target: SegmentTarget, order: Int, goalValue: Double? = nil) {
         self.kindRaw = kind.rawValue
         self.targetKindRaw = target.storageKind
         self.targetValue = target.value
         self.order = order
+        self.goalValue = goalValue
     }
 
     var kind: StepKind {
