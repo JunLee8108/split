@@ -22,7 +22,7 @@ struct ContentView: View {
             }
         }
         .task {
-            Presets.insertIfNeeded(into: modelContext)
+            Presets.insertInitialIfNeeded(into: modelContext)
         }
     }
 }

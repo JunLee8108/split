@@ -78,6 +78,27 @@ struct CircleIconButton: View {
     }
 }
 
+/// 원형 아이콘 메뉴. CircleIconButton과 같은 모양.
+struct CircleIconMenu<Content: View>: View {
+    let systemImage: String
+    let label: String
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        Menu {
+            content
+        } label: {
+            Image(systemName: systemImage)
+                .font(.system(size: 16, weight: .semibold))
+                .frame(width: 36, height: 36)
+                .background(Color.card, in: Circle())
+                .contentShape(Circle())
+        }
+        .foregroundStyle(Color.accentColor)
+        .accessibilityLabel(label)
+    }
+}
+
 struct SectionLabel: View {
     let text: String
 
@@ -147,6 +168,8 @@ struct EmptyCard: View {
     let message: String
     var actionTitle: String? = nil
     var action: (() -> Void)? = nil
+    var secondaryTitle: String? = nil
+    var secondaryAction: (() -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -158,12 +181,19 @@ struct EmptyCard: View {
             Text(message)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            if let actionTitle, let action {
-                Button(actionTitle, action: action)
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                    .padding(.top, 4)
+            HStack(spacing: 8) {
+                if let actionTitle, let action {
+                    Button(actionTitle, action: action)
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.capsule)
+                }
+                if let secondaryTitle, let secondaryAction {
+                    Button(secondaryTitle, action: secondaryAction)
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                }
             }
+            .padding(.top, 4)
         }
         .card(padding: 20)
     }

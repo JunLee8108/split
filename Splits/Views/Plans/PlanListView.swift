@@ -16,6 +16,7 @@ struct PlanListView: View {
     @AppStorage(AppSettings.lastPlanNameKey) private var lastPlanName = ""
     @State private var activePlan: IntervalPlan?
     @State private var isCreating = false
+    @State private var isBrowsingTemplates = false
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
 
@@ -28,8 +29,17 @@ struct PlanListView: View {
             ScrollView {
                 VStack(spacing: Metrics.cardSpacing) {
                     ScreenHeader(eyebrow: Date.now.formatted(.dateTime.month().day().weekday(.wide))) {
-                        CircleIconButton(systemImage: "plus", label: "새 플랜") {
-                            isCreating = true
+                        CircleIconMenu(systemImage: "plus", label: "플랜 추가") {
+                            Button {
+                                isCreating = true
+                            } label: {
+                                Label("직접 만들기", systemImage: "square.and.pencil")
+                            }
+                            Button {
+                                isBrowsingTemplates = true
+                            } label: {
+                                Label("템플릿에서 고르기", systemImage: "square.grid.2x2")
+                            }
                         }
                     }
 
@@ -45,12 +55,13 @@ struct PlanListView: View {
                     if plans.isEmpty {
                         EmptyCard(
                             systemImage: "figure.run",
-                            title: "첫 플랜을 만들어 보세요",
-                            message: "400m × 8처럼 거리로, 3분 달리기 + 1분 회복처럼 시간으로 구간을 짤 수 있어요.",
-                            actionTitle: "플랜 만들기"
-                        ) {
-                            isCreating = true
-                        }
+                            title: "첫 플랜을 골라 보세요",
+                            message: "400m 반복, 야소 800, 파틀렉 같은 템플릿에서 고르거나 직접 구간을 짤 수 있어요.",
+                            actionTitle: "템플릿에서 고르기",
+                            action: { isBrowsingTemplates = true },
+                            secondaryTitle: "직접 만들기",
+                            secondaryAction: { isCreating = true }
+                        )
                     } else {
                         SectionLabel("내 플랜")
                         ForEach(plans) { plan in
@@ -92,6 +103,9 @@ struct PlanListView: View {
             }
             .sheet(isPresented: $isCreating) {
                 PlanEditorView(plan: nil)
+            }
+            .sheet(isPresented: $isBrowsingTemplates) {
+                TemplateLibraryView()
             }
         }
     }
