@@ -145,6 +145,7 @@ struct SessionBackground: View {
                 .fill(kind.tint.opacity(0.12))
                 .frame(width: 360, height: 360)
                 .offset(x: 150, y: -260)
+                .allowsHitTesting(false)
         }
         .ignoresSafeArea()
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.4), value: kind)

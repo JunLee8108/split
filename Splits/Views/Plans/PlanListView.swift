@@ -123,14 +123,17 @@ struct HeroPlanCard: View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
                 .fill(Color.run)
+            // 장식. 카드 밖으로 삐져나가므로 터치는 받지 않는다.
             Circle()
                 .fill(.white.opacity(0.10))
                 .frame(width: 240, height: 240)
                 .offset(x: 200, y: -110)
+                .allowsHitTesting(false)
             Circle()
                 .fill(.white.opacity(0.06))
                 .frame(width: 140, height: 140)
                 .offset(x: 20, y: 120)
+                .allowsHitTesting(false)
 
             VStack(alignment: .leading, spacing: 14) {
                 Text("다음 세션")
@@ -174,6 +177,8 @@ struct HeroPlanCard: View {
             .padding(20)
         }
         .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        // clipShape는 그리기만 자른다. 터치 영역도 카드 모양으로 고정한다.
+        .contentShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
         .accessibilityElement(children: .contain)
     }
 }
