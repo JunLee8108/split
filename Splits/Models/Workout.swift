@@ -60,6 +60,15 @@ final class Workout {
         laps.sorted { $0.index < $1.index }
     }
 
+    var lapRecords: [LapRecord] {
+        orderedLaps.map(\.record)
+    }
+
+    /// 스텝 index → 구간 종류. 경로 색칠에 쓴다.
+    var stepKinds: [Int: StepKind] {
+        Dictionary(laps.map { ($0.index, $0.kind) }, uniquingKeysWith: { first, _ in first })
+    }
+
     /// 완료된 세션 요약을 저장용 모델로 바꿔 컨텍스트에 넣는다.
     @discardableResult
     static func save(_ summary: WorkoutSummary, into context: ModelContext) -> Workout {
@@ -114,4 +123,8 @@ final class Lap {
 
     /// 초/km. 거리가 너무 짧으면 nil.
     var pace: TimeInterval? { PaceMath.pace(distance: distance, duration: duration) }
+
+    var record: LapRecord {
+        LapRecord(index: index, kind: kind, target: target, distance: distance, duration: duration)
+    }
 }

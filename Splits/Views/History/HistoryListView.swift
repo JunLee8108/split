@@ -2,7 +2,7 @@
 //  HistoryListView.swift
 //  Splits
 //
-//  기록 목록. 상세 화면(랩 테이블, 지도)은 Phase 5.
+//  날짜별 섹션. 행마다 경로 스케치와 거리·시간·페이스.
 //
 
 import Foundation
@@ -16,6 +16,13 @@ struct HistoryListView: View {
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
 
+    /// 최신 날짜부터. 같은 날 안에서는 이미 startedAt 역순이다.
+    private var days: [(day: Date, workouts: [Workout])] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: workouts) { calendar.startOfDay(for: $0.startedAt) }
+        return grouped.keys.sorted(by: >).map { ($0, grouped[$0] ?? []) }
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -27,18 +34,29 @@ struct HistoryListView: View {
                     )
                 } else {
                     List {
-                        ForEach(workouts) { workout in
-                            WorkoutRow(workout: workout, unit: unit)
-                        }
-                        .onDelete { offsets in
-                            for index in offsets {
-                                modelContext.delete(workouts[index])
+                        ForEach(days, id: \.day) { entry in
+                            Section {
+                                ForEach(entry.workouts) { workout in
+                                    NavigationLink(value: workout) {
+                                        WorkoutRow(workout: workout, unit: unit)
+                                    }
+                                }
+                                .onDelete { offsets in
+                                    for index in offsets {
+                                        modelContext.delete(entry.workouts[index])
+                                    }
+                                }
+                            } header: {
+                                Text(entry.day, format: .dateTime.year().month().day().weekday(.wide))
                             }
                         }
                     }
                 }
             }
             .navigationTitle("기록")
+            .navigationDestination(for: Workout.self) { workout in
+                WorkoutDetailView(workout: workout)
+            }
         }
     }
 }
@@ -48,23 +66,28 @@ struct WorkoutRow: View {
     let unit: DistanceUnit
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(workout.planName)
-                    .font(.headline)
-                Spacer()
-                Text(workout.startedAt, format: .dateTime.month().day().hour().minute())
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            RouteSketch(route: workout.route, kinds: workout.stepKinds)
+                .frame(width: 56, height: 44)
+                .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(workout.planName)
+                        .font(.headline)
+                    Spacer()
+                    Text(workout.startedAt, format: .dateTime.hour().minute())
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                HStack(spacing: 12) {
+                    Text(Formatters.distance(workout.totalDistance, unit: unit))
+                    Text(Formatters.clock(workout.movingTime))
+                    Text(Formatters.pace(workout.averagePace, unit: unit))
+                }
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(.secondary)
             }
-            HStack(spacing: 14) {
-                Label(Formatters.distance(workout.totalDistance, unit: unit), systemImage: "point.topleft.down.to.point.bottomright.curvepath")
-                Label(Formatters.clock(workout.movingTime), systemImage: "stopwatch")
-                Label(Formatters.pace(workout.averagePace, unit: unit), systemImage: "speedometer")
-            }
-            .font(.system(.subheadline, design: .default).monospacedDigit())
-            .foregroundStyle(.secondary)
-            .labelStyle(.titleOnly)
         }
         .padding(.vertical, 2)
     }
