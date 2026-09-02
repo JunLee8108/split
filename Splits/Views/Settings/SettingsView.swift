@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage(AppSettings.voiceEnabledKey) private var voiceEnabled = true
     @AppStorage(AppSettings.countdownSecondsKey) private var countdownSeconds = AppSettings.defaultCountdownSeconds
     @AppStorage(AppSettings.keepScreenOnKey) private var keepScreenOn = true
+    @AppStorage(AppSettings.timeMilestonesKey) private var timeMilestones = true
     @AppStorage(AppSettings.saveToHealthKey) private var saveToHealth = false
 
     @State private var healthAuthorizationFailed = false
@@ -39,6 +40,10 @@ struct SettingsView: View {
                     Toggle(isOn: $voiceEnabled) {
                         SettingsRowLabel(title: "음성 안내", systemImage: "speaker.wave.2.fill", tint: .run)
                     }
+                    Toggle(isOn: $timeMilestones) {
+                        SettingsRowLabel(title: "남은 시간 안내", systemImage: "clock.badge", tint: .run)
+                    }
+                    .disabled(!voiceEnabled)
                     Stepper(value: $countdownSeconds, in: 3...10) {
                         SettingsRowLabel(title: "종료 \(countdownSeconds)초 전 카운트다운", systemImage: "timer", tint: .run)
                     }
@@ -46,7 +51,7 @@ struct SettingsView: View {
                 } header: {
                     Text("안내")
                 } footer: {
-                    Text("시간 구간이 끝나기 전 숫자를 세어 줍니다. 거리 구간은 100m 남았을 때 한 번 알립니다.")
+                    Text("시간 구간은 1분·30초·10초 남았을 때 알리고, 끝나기 전에는 숫자를 세어 줍니다. 거리 구간은 100m 남았을 때 한 번 알립니다.")
                 }
 
                 if health.isAvailable {

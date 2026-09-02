@@ -39,6 +39,7 @@ final class WorkoutSession {
         announcer.isVoiceEnabled = AppSettings.voiceEnabled
         announcer.unit = AppSettings.distanceUnit
         engine.countdownSeconds = AppSettings.countdownSeconds
+        engine.announcesTimeMilestones = AppSettings.timeMilestonesEnabled
 
         announcer.activateAudioSession()
         location.start()

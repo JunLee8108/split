@@ -25,6 +25,7 @@ enum AppSettings {
     static let countdownSecondsKey = "settings.countdownSeconds"
     static let keepScreenOnKey = "settings.keepScreenOn"
     static let saveToHealthKey = "settings.saveToHealth"
+    static let timeMilestonesKey = "settings.timeMilestones"
     static let lastPlanNameKey = "state.lastPlanName"
 
     static let defaultCountdownSeconds = 5
@@ -44,6 +45,10 @@ enum AppSettings {
 
     static var keepScreenOn: Bool {
         UserDefaults.standard.object(forKey: keepScreenOnKey) as? Bool ?? true
+    }
+
+    static var timeMilestonesEnabled: Bool {
+        UserDefaults.standard.object(forKey: timeMilestonesKey) as? Bool ?? true
     }
 
     static var saveToHealth: Bool {
