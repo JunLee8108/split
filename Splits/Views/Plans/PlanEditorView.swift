@@ -21,6 +21,7 @@ struct PlanEditorView: View {
     @FocusState private var nameFocused: Bool
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
+    private var blueprint: PlanBlueprint { draft.blueprint }
 
     init(plan: IntervalPlan?) {
         self.plan = plan
@@ -90,16 +91,16 @@ struct PlanEditorView: View {
                     }
                 }
 
-                Section("예상") {
-                    let blueprint = draft.blueprint
-                    let steps = blueprint.steps()
-                    LabeledContent("구간 수", value: "\(steps.count)")
+                Section {
+                    LabeledContent("구간 수", value: "\(blueprint.steps().count)")
                     if blueprint.plannedDistance > 0 {
                         LabeledContent("계획 거리", value: Formatters.distance(blueprint.plannedDistance, unit: unit))
                     }
                     if let estimate = Formatters.estimatedDuration(blueprint) {
                         LabeledContent("예상 시간", value: estimate)
                     }
+                } header: {
+                    Text("예상")
                 } footer: {
                     if blueprint.estimatedDuration.unknownSteps > 0 {
                         Text("목표 시간이 없는 거리 구간 \(blueprint.estimatedDuration.unknownSteps)개는 예상 시간에서 빠졌어요.")
