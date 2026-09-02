@@ -12,8 +12,7 @@ extension Color {
     static let screenBackground = Color(.systemGroupedBackground)
     static let card = Color(.secondarySystemGroupedBackground)
     static let cardSecondary = Color(.tertiarySystemGroupedBackground)
-    static let run = Color("Run")
-    static let rest = Color("Rest")
+    // Color.run / Color.rest 는 Xcode가 색 에셋에서 자동 생성한다.
 }
 
 enum Metrics {
