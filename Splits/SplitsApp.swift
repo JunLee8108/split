@@ -2,8 +2,6 @@
 //  SplitsApp.swift
 //  Splits
 //
-//  Created by Jun Lee on 9/2/26.
-//
 
 import SwiftUI
 import SwiftData
@@ -12,7 +10,10 @@ import SwiftData
 struct SplitsApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            IntervalPlan.self,
+            Segment.self,
+            Workout.self,
+            Lap.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
