@@ -37,6 +37,12 @@ nonisolated enum WorkoutEvent: Hashable, Sendable {
     case timeRemaining(Int)
     /// 시간 목표 구간의 종료 몇 초 전. 5, 4, 3, 2, 1 순서로 한 번씩.
     case countdown(Int)
+    /// 거리 구간의 목표 시간까지 남은 이정표. 60, 30, 10초.
+    case goalTimeRemaining(Int)
+    /// 거리 구간의 목표 시간 몇 초 전. 5, 4, 3, 2, 1.
+    case goalCountdown(Int)
+    /// 거리 구간을 목표 시간 안에 끝내지 못했다. 한 번만.
+    case goalTimeExceeded
     /// 거리 목표 구간의 종료 직전. 남은 미터.
     case approaching(remainingMeters: Double)
     /// 누적 거리가 1km 단위를 넘었다. 그 1km에 걸린 페이스.
@@ -80,6 +86,7 @@ final class WorkoutEngine {
     private var paceCalculator = PaceCalculator()
     private var lastCountdownAnnounced: Int?
     private var milestonesAnnounced: Set<Int> = []
+    private var goalExceededAnnounced = false
     private var approachingAnnounced = false
     private var kilometersAnnounced = 0
     private var movingTimeAtLastKilometer: TimeInterval = 0
@@ -116,6 +123,7 @@ final class WorkoutEngine {
         paceCalculator = PaceCalculator()
         lastCountdownAnnounced = nil
         milestonesAnnounced = []
+        goalExceededAnnounced = false
         approachingAnnounced = false
         kilometersAnnounced = 0
         movingTimeAtLastKilometer = 0
@@ -203,30 +211,62 @@ final class WorkoutEngine {
             return
         }
 
-        if case .duration(let duration) = tracker.step.target {
-            let remainingExact = tracker.remaining
-
-            if announcesTimeMilestones {
-                let crossed = timeMilestones.filter { milestone in
-                    Double(milestone) <= duration - 3
-                        && milestone > countdownSeconds
-                        && remainingExact <= Double(milestone)
-                        && !milestonesAnnounced.contains(milestone)
+        switch tracker.step.target {
+        case .duration(let duration):
+            // 구간 종료까지 남은 시간 기준.
+            announceTime(
+                remaining: tracker.remaining,
+                total: duration,
+                milestone: { .timeRemaining($0) },
+                countdown: { .countdown($0) }
+            )
+        case .distance:
+            // 거리 구간은 목표 시간까지 남은 시간 기준.
+            guard let goal = tracker.step.goalValue, goal > 0 else { return }
+            let remaining = goal - tracker.elapsed
+            if remaining <= 0 {
+                if !goalExceededAnnounced {
+                    goalExceededAnnounced = true
+                    emit(.goalTimeExceeded)
                 }
-                if let nearest = crossed.min() {
-                    // 늦은 틱으로 여러 개를 한 번에 지나면 가장 가까운 것 하나만 읽는다.
-                    milestonesAnnounced.formUnion(crossed)
-                    if remainingExact > Double(countdownSeconds) {
-                        emit(.timeRemaining(nearest))
-                    }
+                return
+            }
+            announceTime(
+                remaining: remaining,
+                total: goal,
+                milestone: { .goalTimeRemaining($0) },
+                countdown: { .goalCountdown($0) }
+            )
+        }
+    }
+
+    /// 이정표(60·30·10초)와 카운트다운(5~1)을 한 번씩만 내보낸다.
+    private func announceTime(
+        remaining remainingExact: TimeInterval,
+        total: TimeInterval,
+        milestone: (Int) -> WorkoutEvent,
+        countdown: (Int) -> WorkoutEvent
+    ) {
+        if announcesTimeMilestones {
+            let crossed = timeMilestones.filter { m in
+                Double(m) <= total - 3
+                    && m > countdownSeconds
+                    && remainingExact <= Double(m)
+                    && !milestonesAnnounced.contains(m)
+            }
+            if let nearest = crossed.min() {
+                // 늦은 틱으로 여러 개를 한 번에 지나면 가장 가까운 것 하나만 읽는다.
+                milestonesAnnounced.formUnion(crossed)
+                if remainingExact > Double(countdownSeconds) {
+                    emit(milestone(nearest))
                 }
             }
+        }
 
-            let remaining = Int(remainingExact.rounded(.up))
-            if remaining <= countdownSeconds, remaining >= 1, lastCountdownAnnounced != remaining {
-                lastCountdownAnnounced = remaining
-                emit(.countdown(remaining))
-            }
+        let remaining = Int(remainingExact.rounded(.up))
+        if remaining <= countdownSeconds, remaining >= 1, lastCountdownAnnounced != remaining {
+            lastCountdownAnnounced = remaining
+            emit(countdown(remaining))
         }
     }
 
@@ -280,6 +320,7 @@ final class WorkoutEngine {
         tracker = SegmentTracker(step: steps[next], carriedDistance: carriedDistance, carriedTime: carriedTime)
         lastCountdownAnnounced = nil
         milestonesAnnounced = []
+        goalExceededAnnounced = false
         approachingAnnounced = false
         emit(.stepStarted(steps[next]))
     }
