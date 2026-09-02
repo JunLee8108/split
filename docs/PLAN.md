@@ -121,3 +121,16 @@ SplitsTests/       SegmentTrackerTests, WorkoutEngineTests, PaceMathTests
 | 배터리 (1h ≈ 15–20%) | Best 정확도 유지, 회복 구간 화면 밝기 제안 |
 | iOS 26.5 타깃 | 실기기 버전 확인, 필요 시 26.0으로 |
 | 실외 검증 | GPX 재생 + Phase 3 실제 러닝 1회 |
+
+## 진행 상황
+- [x] Phase 1 — 템플릿 정리, Info.plist(location 백그라운드, 권한 문구), iPhone 세로 전용, 모델 4종, 프리셋 3개, 탭 골격(플랜·기록·설정)
+- [x] Phase 2 — DistanceAccumulator / PaceCalculator / SegmentTracker / WorkoutEngine / LocationManager(CLLocationUpdate.liveUpdates + CLBackgroundActivitySession) / Announcer / WorkoutSession, 유닛 테스트 4파일
+- [ ] Phase 3 — SessionView, 플랜에서 시작 버튼, 실외 검증
+- [ ] Phase 4 — 플랜 편집기
+- [ ] Phase 5 — 세션 요약 시트, 기록 상세(랩 테이블 + 지도)
+- [ ] Phase 6 — HealthKit, 아이콘, 접근성, TestFlight
+
+메모
+- Xcode 없이 작성한 코드다. 첫 빌드에서 경고·오류가 나면 그 로그를 기준으로 고친다.
+- 햅틱은 CoreHaptics 대신 UIKit 피드백 제너레이터를 썼다. 필요한 패턴이 단순해서 충분하다.
+- `replaceSegments`는 기존 Segment를 관계에서만 떼어낸다. 편집기(Phase 4)에서는 빠진 Segment를 명시적으로 delete 한다.
