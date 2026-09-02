@@ -10,6 +10,7 @@ struct PlanListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \IntervalPlan.createdAt) private var plans: [IntervalPlan]
     @AppStorage(AppSettings.distanceUnitKey) private var unitRaw = DistanceUnit.metric.rawValue
+    @State private var activePlan: IntervalPlan?
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
 
@@ -27,6 +28,14 @@ struct PlanListView: View {
                         ForEach(plans) { plan in
                             NavigationLink(value: plan) {
                                 PlanRow(plan: plan, unit: unit)
+                            }
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    activePlan = plan
+                                } label: {
+                                    Label("시작", systemImage: "play.fill")
+                                }
+                                .tint(Color("Run"))
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
@@ -48,6 +57,9 @@ struct PlanListView: View {
             .navigationTitle("플랜")
             .navigationDestination(for: IntervalPlan.self) { plan in
                 PlanDetailView(plan: plan)
+            }
+            .fullScreenCover(item: $activePlan) { plan in
+                SessionView(plan: plan)
             }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

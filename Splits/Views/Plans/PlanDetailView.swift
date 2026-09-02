@@ -2,7 +2,7 @@
 //  PlanDetailView.swift
 //  Splits
 //
-//  플랜을 펼친 구간 목록. 세션 시작 버튼은 Phase 3에서 세션 화면과 함께 붙는다.
+//  플랜을 펼친 구간 목록과 시작 버튼.
 //
 
 import SwiftData
@@ -11,6 +11,7 @@ import SwiftUI
 struct PlanDetailView: View {
     let plan: IntervalPlan
     @AppStorage(AppSettings.distanceUnitKey) private var unitRaw = DistanceUnit.metric.rawValue
+    @State private var isRunning = false
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
     private var blueprint: PlanBlueprint { plan.blueprint }
@@ -46,5 +47,24 @@ struct PlanDetailView: View {
         }
         .navigationTitle(plan.name)
         .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom) {
+            Button {
+                isRunning = true
+            } label: {
+                Label("시작", systemImage: "play.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
+            .disabled(steps.isEmpty)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
+            .background(.bar)
+        }
+        .fullScreenCover(isPresented: $isRunning) {
+            SessionView(plan: plan)
+        }
     }
 }
