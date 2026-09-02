@@ -76,7 +76,7 @@ struct PlanDraft: Hashable {
         let blueprint = plan.blueprint
         self.init(
             name: blueprint.name,
-            segments: blueprint.segments.map(SegmentDraft.init(spec:)),
+            segments: blueprint.segments.map { SegmentDraft(spec: $0) },
             repeatCount: blueprint.repeatCount,
             hasWarmup: blueprint.warmupSeconds != nil,
             warmupSeconds: blueprint.warmupSeconds ?? Self.defaultWarmup,
