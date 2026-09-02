@@ -146,17 +146,22 @@ nonisolated enum Formatters {
         }
     }
 
+    /// 예상 시간. 목표 없는 거리 구간이 있으면 "47:00+".
+    static func estimatedDuration(_ blueprint: PlanBlueprint) -> String? {
+        let estimate = blueprint.estimatedDuration
+        guard estimate.seconds > 0 else { return nil }
+        return estimate.unknownSteps > 0 ? "\(clock(estimate.seconds))+" : clock(estimate.seconds)
+    }
+
     /// 플랜 목록 한 줄 요약. "RUN 400 m · REST 1:30 · 총 4.0 km"
     static func planSummary(_ blueprint: PlanBlueprint, unit: DistanceUnit = .metric) -> String {
         var parts = blueprint.segments.map { "\($0.kind.badge) \(target($0.target, unit: unit))" }
         let plannedDistance = blueprint.plannedDistance
-        let plannedDuration = blueprint.plannedDuration
-        if plannedDistance > 0 && plannedDuration > 0 {
-            parts.append("총 \(distance(plannedDistance, unit: unit)) + \(clock(plannedDuration))")
-        } else if plannedDistance > 0 {
+        if plannedDistance > 0 {
             parts.append("총 \(distance(plannedDistance, unit: unit))")
-        } else if plannedDuration > 0 {
-            parts.append("총 \(clock(plannedDuration))")
+        }
+        if let estimate = estimatedDuration(blueprint) {
+            parts.append("약 \(estimate)")
         }
         return parts.joined(separator: " · ")
     }

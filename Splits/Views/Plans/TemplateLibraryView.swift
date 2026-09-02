@@ -106,8 +106,8 @@ struct TemplateCard: View {
         if blueprint.plannedDistance > 0 {
             parts.append(Formatters.distance(blueprint.plannedDistance, unit: unit))
         }
-        if blueprint.plannedDuration > 0 {
-            parts.append(Formatters.clock(blueprint.plannedDuration))
+        if let estimate = Formatters.estimatedDuration(blueprint) {
+            parts.append("약 \(estimate)")
         }
         if let warmup = blueprint.warmupSeconds {
             parts.append("워밍업 \(Int(warmup / 60))분")
