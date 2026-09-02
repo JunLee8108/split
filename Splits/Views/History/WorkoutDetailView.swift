@@ -64,6 +64,7 @@ struct WorkoutDetailView: View {
         }
         .navigationTitle(workout.planName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 VStack(spacing: 0) {
