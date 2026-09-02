@@ -18,11 +18,14 @@ struct PlanListView: View {
         NavigationStack {
             Group {
                 if plans.isEmpty {
-                    ContentUnavailableView(
-                        "플랜이 없어요",
-                        systemImage: "figure.run",
-                        description: Text("오른쪽 위 + 로 첫 인터벌 플랜을 만드세요.")
-                    )
+                    ContentUnavailableView {
+                        Label("플랜이 없어요", systemImage: "figure.run")
+                    } description: {
+                        Text("첫 인터벌 플랜을 만들어 보세요.")
+                    } actions: {
+                        Button("플랜 만들기", action: addPlan)
+                            .buttonStyle(.borderedProminent)
+                    }
                 } else {
                     List {
                         ForEach(plans) { plan in
