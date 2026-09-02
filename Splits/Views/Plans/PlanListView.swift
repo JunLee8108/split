@@ -11,6 +11,7 @@ struct PlanListView: View {
     @Query(sort: \IntervalPlan.createdAt) private var plans: [IntervalPlan]
     @AppStorage(AppSettings.distanceUnitKey) private var unitRaw = DistanceUnit.metric.rawValue
     @State private var activePlan: IntervalPlan?
+    @State private var isCreating = false
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
 
@@ -64,6 +65,9 @@ struct PlanListView: View {
             .fullScreenCover(item: $activePlan) { plan in
                 SessionView(plan: plan)
             }
+            .sheet(isPresented: $isCreating) {
+                PlanEditorView(plan: nil)
+            }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: addPlan) {
@@ -74,11 +78,8 @@ struct PlanListView: View {
         }
     }
 
-    /// 편집기는 Phase 4에서 붙는다. 지금은 기본 구성으로 만든다.
     private func addPlan() {
-        let plan = IntervalPlan(name: "새 플랜", repeatCount: 4)
-        modelContext.insert(plan)
-        plan.replaceSegments(with: [.run(meters: 400), .rest(seconds: 90)])
+        isCreating = true
     }
 }
 
