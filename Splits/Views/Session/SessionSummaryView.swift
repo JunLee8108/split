@@ -101,7 +101,7 @@ struct LapRow: View {
         .font(.body)
     }
 
-    private var paceColor: Color {
+    private var paceColor: HierarchicalShapeStyle {
         switch highlight {
         case .fastest?: .primary
         case .slowest?: .secondary
