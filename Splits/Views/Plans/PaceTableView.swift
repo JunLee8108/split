@@ -31,12 +31,30 @@ nonisolated enum PaceTable {
 }
 
 struct PaceTableView: View {
-    let meters: Double
     var selectedSeconds: TimeInterval? = nil
     var onSelect: ((TimeInterval) -> Void)? = nil
+    /// true면 상단에서 거리를 바꿀 수 있다. 편집 시트에서 열 때는 구간 거리로 고정.
+    var allowsDistanceChange = false
 
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(AppSettings.distanceUnitKey) private var unitRaw = DistanceUnit.metric.rawValue
+    @State private var meters: Double
 
+    static let distanceOptions: [Double] = [200, 400, 600, 800, 1000, 1200, 1600, 2000, 3000, 5000]
+
+    init(
+        meters: Double,
+        selectedSeconds: TimeInterval? = nil,
+        allowsDistanceChange: Bool = false,
+        onSelect: ((TimeInterval) -> Void)? = nil
+    ) {
+        _meters = State(initialValue: meters)
+        self.selectedSeconds = selectedSeconds
+        self.allowsDistanceChange = allowsDistanceChange
+        self.onSelect = onSelect
+    }
+
+    private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
     private var rows: [PaceTable.Row] { PaceTable.rows(meters: meters) }
 
     var body: some View {
@@ -66,7 +84,7 @@ struct PaceTableView: View {
                     }
                 } header: {
                     HStack {
-                        Text("\(Formatters.distance(meters)) 기록")
+                        Text("\(Formatters.distance(meters, unit: unit)) 기록")
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Text("km 페이스")
                             .frame(width: 96, alignment: .trailing)
@@ -81,6 +99,26 @@ struct PaceTableView: View {
             .navigationTitle("페이스 표")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if allowsDistanceChange {
+                    ToolbarItem(placement: .principal) {
+                        Menu {
+                            Picker("거리", selection: $meters) {
+                                ForEach(Self.distanceOptions, id: \.self) { value in
+                                    Text(Formatters.distance(value, unit: unit)).tag(value)
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(Formatters.distance(meters, unit: unit))
+                                    .font(.headline)
+                                Image(systemName: "chevron.down")
+                                    .font(.caption.weight(.semibold))
+                            }
+                            .foregroundStyle(Color.primary)
+                        }
+                        .accessibilityLabel("거리 선택, 현재 \(Formatters.spokenDistance(meters, unit: unit))")
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("닫기") { dismiss() }
                 }
@@ -90,5 +128,5 @@ struct PaceTableView: View {
 }
 
 #Preview {
-    PaceTableView(meters: 400, selectedSeconds: 90)
+    PaceTableView(meters: 400, selectedSeconds: 90, allowsDistanceChange: true)
 }
