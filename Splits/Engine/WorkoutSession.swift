@@ -7,7 +7,6 @@
 
 import Foundation
 import Observation
-import SwiftData
 import UIKit
 
 @Observable
@@ -59,22 +58,13 @@ final class WorkoutSession {
         engine.skipStep()
     }
 
-    /// 세션을 끝내고 결과를 저장한다. 저장한 Workout을 돌려준다.
+    /// 세션을 끝내고 추적을 멈춘다. 저장 여부는 화면이 요약을 보고 결정한다.
+    /// 마지막 구간이 자동으로 끝난 뒤에 불러도 같은 요약을 준다.
     @discardableResult
-    func finish(saveInto context: ModelContext?) -> Workout? {
-        guard let summary = engine.finish() else {
-            teardown()
-            return nil
-        }
+    func end() -> WorkoutSummary? {
+        let summary = engine.finish()
         teardown()
-        guard let context else { return nil }
-        return Workout.save(summary, into: context)
-    }
-
-    /// 저장하지 않고 버린다.
-    func discard() {
-        _ = engine.finish()
-        teardown()
+        return summary
     }
 
     private func handle(_ event: WorkoutEvent) {

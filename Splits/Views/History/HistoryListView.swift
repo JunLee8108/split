@@ -5,6 +5,7 @@
 //  기록 목록. 상세 화면(랩 테이블, 지도)은 Phase 5.
 //
 
+import Foundation
 import SwiftData
 import SwiftUI
 

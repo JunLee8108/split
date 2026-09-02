@@ -125,7 +125,7 @@ SplitsTests/       SegmentTrackerTests, WorkoutEngineTests, PaceMathTests
 ## 진행 상황
 - [x] Phase 1 — 템플릿 정리, Info.plist(location 백그라운드, 권한 문구), iPhone 세로 전용, 모델 4종, 프리셋 3개, 탭 골격(플랜·기록·설정)
 - [x] Phase 2 — DistanceAccumulator / PaceCalculator / SegmentTracker / WorkoutEngine / LocationManager(CLLocationUpdate.liveUpdates + CLBackgroundActivitySession) / Announcer / WorkoutSession, 유닛 테스트 4파일
-- [ ] Phase 3 — SessionView, 플랜에서 시작 버튼, 실외 검증
+- [x] Phase 3 — SessionView(진행 바·구간 배지·큰 숫자·지표 3개·일시정지/재개/길게 눌러 종료·두 번 탭 넘김), 플랜 상세 시작 버튼과 목록 스와이프 시작, 종료 요약 시트(저장/버리기). 실외 검증은 사용자 몫
 - [ ] Phase 4 — 플랜 편집기
 - [ ] Phase 5 — 세션 요약 시트, 기록 상세(랩 테이블 + 지도)
 - [ ] Phase 6 — HealthKit, 아이콘, 접근성, TestFlight
