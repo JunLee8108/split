@@ -30,20 +30,28 @@ struct SessionView: View {
     var body: some View {
         ZStack(alignment: .top) {
             SessionBackground(kind: kind)
+                .contentShape(Rectangle())
+                .onTapGesture(count: 2) {
+                    session.skipStep()
+                }
 
             VStack(spacing: 0) {
-                SessionHeader(engine: engine, kind: kind, unit: unit)
-                    .padding(.top, 8)
+                // 컨트롤을 뺀 나머지 전체가 두 번 탭 영역이다. 여백까지 포함.
+                VStack(spacing: 0) {
+                    SessionHeader(engine: engine, kind: kind, unit: unit)
+                        .padding(.top, 8)
 
-                Spacer(minLength: 12)
+                    Spacer(minLength: 12)
 
-                SessionMetrics(engine: engine, unit: unit)
-                    .contentShape(Rectangle())
-                    .onTapGesture(count: 2) {
-                        session.skipStep()
-                    }
+                    SessionMetrics(engine: engine, unit: unit)
 
-                Spacer(minLength: 12)
+                    Spacer(minLength: 12)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
+                .onTapGesture(count: 2) {
+                    session.skipStep()
+                }
 
                 SessionControls(session: session, tint: kind.tint, onFinish: endSession)
             }
@@ -109,6 +117,8 @@ struct SessionView: View {
                 }
             }
             .font(.footnote.weight(.semibold))
+            .buttonStyle(.bordered)
+            .controlSize(.small)
         }
         .padding(12)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))

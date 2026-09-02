@@ -22,6 +22,7 @@ struct SessionControls: View {
                     Label("일시정지", systemImage: "pause.fill")
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .background(.white.opacity(0.12), in: Capsule())
@@ -35,6 +36,7 @@ struct SessionControls: View {
                         Label("재개", systemImage: "play.fill")
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
+                            .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
                     .background(tint, in: Capsule())
@@ -74,6 +76,7 @@ struct HoldToFinishButton: View {
             .font(.headline)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
+            .contentShape(Capsule())
             .background(.white.opacity(isPressing ? 0.3 : 0.12), in: Capsule())
             .scaleEffect(isPressing ? 0.97 : 1)
             .animation(.easeOut(duration: 0.15), value: isPressing)
