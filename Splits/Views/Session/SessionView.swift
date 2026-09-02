@@ -218,100 +218,125 @@ struct ProgressBar: View {
     }
 }
 
-/// 한 화면, 한 숫자. 현재 구간에서 남은 것만 크게 보여 준다.
+/// 위에서 아래로 "남은 것 → 이번 구간에서 한 것 → 세션 전체" 세 층. 급할수록 위만 본다.
 struct SessionMetrics: View {
     let engine: WorkoutEngine
     let unit: DistanceUnit
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    var body: some View {
-        VStack(spacing: 28) {
-            VStack(spacing: 4) {
-                Text(primary.value)
-                    .font(.system(size: 104, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(1)
-                    .contentTransition(.numericText())
-                Text(primary.caption)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                if let goalLine {
-                    Text(goalLine)
-                        .font(.subheadline.weight(.medium))
-                        .monospacedDigit()
-                        .foregroundStyle(.primary.opacity(0.85))
-                        .padding(.top, 2)
-                }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(accessibilityText)
+    private var tracker: SegmentTracker? { engine.tracker }
+    private var tint: Color { (tracker?.step.kind ?? .run).tint }
 
+    var body: some View {
+        VStack(spacing: 26) {
+            // 1층: 이 구간을 끝내는 값
+            BigValue(text: primary.value, label: primary.label, size: 92, style: HierarchicalShapeStyle.primary)
+
+            // 2층: 목표까지, 없으면 구간 경과
+            BigValue(text: secondary.value, label: secondary.label, size: 52, style: tint)
+
+            // 3층: 이번 구간에서 한 것
+            Divider().overlay(.white.opacity(0.15))
             if dynamicTypeSize.isAccessibilitySize {
-                VStack(spacing: 14) {
-                    stats
-                }
+                VStack(spacing: 14) { segmentStats }
+                VStack(spacing: 14) { sessionStats }
             } else {
-                HStack(alignment: .top, spacing: 0) {
-                    stats
-                }
+                HStack(alignment: .top, spacing: 0) { segmentStats }
+                HStack(alignment: .top, spacing: 0) { sessionStats }
             }
         }
+        .accessibilityElement(children: .contain)
+    }
+
+    // MARK: 1층
+
+    private var primary: (value: String, label: String) {
+        guard let tracker else { return ("완료", " ") }
+        switch tracker.step.target {
+        case .distance:
+            return (Formatters.distance(tracker.remaining.rounded(), unit: unit), "남은 거리")
+        case .duration:
+            return (Formatters.clock(tracker.remaining.rounded(.up)), "남은 시간")
+        }
+    }
+
+    // MARK: 2층
+
+    private var secondary: (value: String, label: String) {
+        guard let tracker else { return (" ", " ") }
+        let step = tracker.step
+        if let goal = step.goalValue {
+            let pace = Formatters.pace(step.goalPace, unit: unit)
+            switch step.target {
+            case .distance:
+                let remaining = goal - tracker.elapsed
+                if remaining >= 0 {
+                    return (Formatters.clock(remaining.rounded(.up)), "목표까지 · \(pace)")
+                }
+                return ("+\(Formatters.clock(-remaining))", "목표 초과 · \(pace)")
+            case .duration:
+                let remaining = goal - tracker.distance
+                if remaining >= 0 {
+                    return (Formatters.distance(remaining.rounded(), unit: unit), "목표까지 · \(pace)")
+                }
+                return ("+\(Formatters.distance(-remaining, unit: unit))", "목표 초과 · \(pace)")
+            }
+        }
+        // 목표가 없으면 1층과 반대 축을 보여 준다. 거리 구간이면 경과 시간, 시간 구간이면 달린 거리.
+        switch step.target {
+        case .distance:
+            return (Formatters.clock(tracker.elapsed), "구간 경과")
+        case .duration:
+            return (Formatters.distance(tracker.distance, unit: unit), "구간 거리")
+        }
+    }
+
+    // MARK: 3층
+
+    @ViewBuilder
+    private var segmentStats: some View {
+        Stat(value: Formatters.distance(tracker?.distance ?? 0, unit: unit), label: "이번 구간 거리")
+        Stat(value: Formatters.clock(tracker?.elapsed ?? 0), label: "이번 구간 시간")
     }
 
     @ViewBuilder
-    private var stats: some View {
-        Stat(value: Formatters.pace(engine.currentPace, unit: unit), label: "현재 페이스")
-        Stat(value: distance.value, label: distance.unit)
-        Stat(value: Formatters.clock(engine.tracker?.elapsed ?? 0), label: "이번 구간")
+    private var sessionStats: some View {
+        Stat(value: Formatters.pace(engine.currentPace, unit: unit), label: "페이스")
+        Stat(value: Formatters.distance(engine.totalDistance, unit: unit), label: "총 거리")
+        Stat(value: Formatters.clock(engine.movingTime), label: "총 시간")
     }
 
-    private var distance: (value: String, unit: String) {
-        Formatters.distanceValue(engine.totalDistance, unit: unit)
-    }
+    // MARK: 부품
 
-    private var primary: (value: String, caption: String) {
-        guard let tracker = engine.tracker else {
-            return ("완료", " ")
-        }
-        switch tracker.step.target {
-        case .distance(let target):
-            let remaining = Formatters.distanceValue(tracker.remaining, unit: unit)
-            return (remaining.value, "\(remaining.unit) 남음 · 목표 \(Formatters.distance(target, unit: unit))")
-        case .duration(let target):
-            return (Formatters.clock(tracker.remaining.rounded(.up)), "남음 · 목표 \(Formatters.clock(target))")
-        }
-    }
+    private struct BigValue: View {
+        let text: String
+        let label: String
+        let size: CGFloat
+        let style: AnyShapeStyle
 
-    /// "목표 1:30 (3'45\") · 남은 0:42" 또는 넘겼으면 "· +0:05"
-    private var goalLine: String? {
-        guard let tracker = engine.tracker, let goal = tracker.step.goalValue else { return nil }
-        let pace = Formatters.pace(tracker.step.goalPace, unit: unit)
-        switch tracker.step.target {
-        case .distance:
-            let remaining = goal - tracker.elapsed
-            let tail = remaining >= 0 ? "남은 \(Formatters.clock(remaining.rounded(.up)))" : "+\(Formatters.clock(-remaining))"
-            return "목표 \(Formatters.clock(goal)) (\(pace)) · \(tail)"
-        case .duration:
-            let remaining = goal - tracker.distance
-            let tail = remaining >= 0 ? "남은 \(Formatters.distance(remaining, unit: unit))" : "+\(Formatters.distance(-remaining, unit: unit))"
-            return "목표 \(Formatters.distance(goal, unit: unit)) (\(pace)) · \(tail)"
+        init(text: String, label: String, size: CGFloat, style: some ShapeStyle) {
+            self.text = text
+            self.label = label
+            self.size = size
+            self.style = AnyShapeStyle(style)
         }
-    }
 
-    private var accessibilityText: String {
-        guard let tracker = engine.tracker else { return "세션 완료" }
-        let step = tracker.step
-        let remaining: String
-        switch step.target {
-        case .distance: remaining = Formatters.spokenDistance(tracker.remaining.rounded(), unit: unit)
-        case .duration: remaining = Formatters.spokenDuration(tracker.remaining)
+        var body: some View {
+            VStack(spacing: 2) {
+                Text(text)
+                    .font(.system(size: size, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+                    .foregroundStyle(style)
+                    .contentTransition(.numericText())
+                Text(label)
+                    .font(.subheadline.weight(.medium))
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
+            .accessibilityElement(children: .combine)
         }
-        var text = "\(step.kind.koreanName) \(step.ordinal), \(remaining) 남음"
-        if let goalLine {
-            text += ", \(goalLine)"
-        }
-        return text
     }
 
     private struct Stat: View {
@@ -319,14 +344,14 @@ struct SessionMetrics: View {
         let label: String
 
         var body: some View {
-            VStack(spacing: 4) {
+            VStack(spacing: 3) {
                 Text(value)
-                    .font(.system(size: 24, weight: .semibold))
+                    .font(.system(size: 22, weight: .semibold))
                     .monospacedDigit()
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
                 Text(label)
-                    .font(.caption2.weight(.medium))
-                    .tracking(0.8)
-                    .textCase(.uppercase)
+                    .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
