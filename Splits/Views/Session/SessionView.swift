@@ -236,6 +236,13 @@ struct SessionMetrics: View {
                 Text(primary.caption)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                if let goalLine {
+                    Text(goalLine)
+                        .font(.subheadline.weight(.medium))
+                        .monospacedDigit()
+                        .foregroundStyle(.primary.opacity(0.85))
+                        .padding(.top, 2)
+                }
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(accessibilityText)
@@ -276,6 +283,22 @@ struct SessionMetrics: View {
         }
     }
 
+    /// "목표 1:30 (3'45\") · 남은 0:42" 또는 넘겼으면 "· +0:05"
+    private var goalLine: String? {
+        guard let tracker = engine.tracker, let goal = tracker.step.goalValue else { return nil }
+        let pace = Formatters.pace(tracker.step.goalPace, unit: unit)
+        switch tracker.step.target {
+        case .distance:
+            let remaining = goal - tracker.elapsed
+            let tail = remaining >= 0 ? "남은 \(Formatters.clock(remaining.rounded(.up)))" : "+\(Formatters.clock(-remaining))"
+            return "목표 \(Formatters.clock(goal)) (\(pace)) · \(tail)"
+        case .duration:
+            let remaining = goal - tracker.distance
+            let tail = remaining >= 0 ? "남은 \(Formatters.distance(remaining, unit: unit))" : "+\(Formatters.distance(-remaining, unit: unit))"
+            return "목표 \(Formatters.distance(goal, unit: unit)) (\(pace)) · \(tail)"
+        }
+    }
+
     private var accessibilityText: String {
         guard let tracker = engine.tracker else { return "세션 완료" }
         let step = tracker.step
@@ -284,7 +307,11 @@ struct SessionMetrics: View {
         case .distance: remaining = Formatters.spokenDistance(tracker.remaining.rounded(), unit: unit)
         case .duration: remaining = Formatters.spokenDuration(tracker.remaining)
         }
-        return "\(step.kind.koreanName) \(step.ordinal), \(remaining) 남음"
+        var text = "\(step.kind.koreanName) \(step.ordinal), \(remaining) 남음"
+        if let goalLine {
+            text += ", \(goalLine)"
+        }
+        return text
     }
 
     private struct Stat: View {

@@ -120,6 +120,32 @@ nonisolated enum Formatters {
         }
     }
 
+    /// 목표값 표기. 거리 구간의 목표는 시간, 시간 구간의 목표는 거리.
+    static func goal(_ target: SegmentTarget, goalValue: Double, unit: DistanceUnit = .metric) -> String {
+        switch target {
+        case .distance: clock(goalValue)
+        case .duration: distance(goalValue, unit: unit)
+        }
+    }
+
+    /// 3'45"/km · 6'02"/mi
+    static func paceBoth(_ secondsPerKm: TimeInterval?) -> String {
+        guard let secondsPerKm, secondsPerKm.isFinite, secondsPerKm > 0 else { return "—" }
+        return "\(pace(secondsPerKm, unit: .metric))/km · \(pace(secondsPerKm, unit: .imperial))/mi"
+    }
+
+    /// 목표 대비 차이. −0:02, +0:05, +40 m, −15 m. 없으면 nil.
+    static func goalDelta(_ lap: LapRecord, unit: DistanceUnit = .metric) -> String? {
+        guard let delta = lap.goalDelta else { return nil }
+        let sign = delta < 0 ? "−" : "+"
+        switch lap.target {
+        case .distance:
+            return "\(sign)\(clock(abs(delta)))"
+        case .duration:
+            return "\(sign)\(distance(abs(delta), unit: unit))"
+        }
+    }
+
     /// 플랜 목록 한 줄 요약. "RUN 400 m · REST 1:30 · 총 4.0 km"
     static func planSummary(_ blueprint: PlanBlueprint, unit: DistanceUnit = .metric) -> String {
         var parts = blueprint.segments.map { "\($0.kind.badge) \(target($0.target, unit: unit))" }

@@ -97,15 +97,18 @@ final class Lap {
     var distance: Double
     /// 초.
     var duration: TimeInterval
+    /// 거리 구간이면 목표 시간(초), 시간 구간이면 목표 거리(미터).
+    var goalValue: Double?
     var workout: Workout?
 
-    init(index: Int, kind: StepKind, target: SegmentTarget, distance: Double, duration: TimeInterval) {
+    init(index: Int, kind: StepKind, target: SegmentTarget, distance: Double, duration: TimeInterval, goalValue: Double? = nil) {
         self.index = index
         self.kindRaw = kind.rawValue
         self.targetKindRaw = target.storageKind
         self.targetValue = target.value
         self.distance = distance
         self.duration = duration
+        self.goalValue = goalValue
     }
 
     convenience init(record: LapRecord) {
@@ -114,7 +117,8 @@ final class Lap {
             kind: record.kind,
             target: record.target,
             distance: record.distance,
-            duration: record.duration
+            duration: record.duration,
+            goalValue: record.goalValue
         )
     }
 
@@ -125,6 +129,6 @@ final class Lap {
     var pace: TimeInterval? { PaceMath.pace(distance: distance, duration: duration) }
 
     var record: LapRecord {
-        LapRecord(index: index, kind: kind, target: target, distance: distance, duration: duration)
+        LapRecord(index: index, kind: kind, target: target, distance: distance, duration: duration, goalValue: goalValue)
     }
 }
