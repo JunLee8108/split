@@ -36,14 +36,12 @@ struct WorkoutDetailView: View {
             }
 
             Section {
-                HStack(alignment: .top, spacing: 0) {
-                    DetailStat(value: Formatters.distanceValue(workout.totalDistance, unit: unit).value,
-                               label: Formatters.distanceValue(workout.totalDistance, unit: unit).unit)
-                    DetailStat(value: Formatters.clock(workout.movingTime), label: "시간")
-                    DetailStat(value: Formatters.pace(workout.averagePace, unit: unit), label: "평균 페이스")
-                }
-                .padding(.vertical, 6)
-                .listRowBackground(Color.clear)
+                SummaryStatsRow(
+                    distance: workout.totalDistance,
+                    movingTime: workout.movingTime,
+                    averagePace: workout.averagePace,
+                    unit: unit
+                )
                 if let goals = GoalSummary.compute(for: laps) {
                     LabeledContent("목표 달성", value: "\(goals.met) / \(goals.total)")
                 }
@@ -53,6 +51,8 @@ struct WorkoutDetailView: View {
                 if laps.isEmpty {
                     Text("기록된 구간이 없어요.")
                         .foregroundStyle(.secondary)
+                } else {
+                    LapTableHeader()
                 }
                 ForEach(laps, id: \.index) { lap in
                     LapRow(lap: lap, unit: unit, highlight: highlights[lap.index])
@@ -105,27 +105,5 @@ struct WorkoutDetailView: View {
                     }
             }
         }
-    }
-}
-
-private struct DetailStat: View {
-    let value: String
-    let label: String
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .minimumScaleFactor(0.7)
-                .lineLimit(1)
-            Text(label)
-                .font(.caption2.weight(.medium))
-                .tracking(0.8)
-                .textCase(.uppercase)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
     }
 }
