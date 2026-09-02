@@ -55,6 +55,9 @@ struct SessionControls: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
+        .accessibilityAction(named: "다음 구간으로") {
+            session.skipStep()
+        }
     }
 
     private var hint: String {
