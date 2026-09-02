@@ -29,6 +29,7 @@ final class WorkoutSession {
     }
 
     func start(plan: IntervalPlan) {
+        UserDefaults.standard.set(plan.name, forKey: AppSettings.lastPlanNameKey)
         start(blueprint: plan.blueprint)
     }
 
