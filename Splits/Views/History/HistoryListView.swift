@@ -27,43 +27,52 @@ struct HistoryListView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: Metrics.cardSpacing) {
-                    ScreenHeader(eyebrow: "이번 주") {
-                        EmptyView()
-                    }
+            List {
+                ScreenHeader(eyebrow: "이번 주") {
+                    EmptyView()
+                }
+                .cardRow(top: 8, bottom: Metrics.headerGap)
 
-                    WeekSummaryCard(workouts: workouts, unit: unit)
+                WeekSummaryCard(workouts: workouts, unit: unit)
+                    .cardRow()
 
-                    if workouts.isEmpty {
-                        EmptyCard(
-                            systemImage: "clock",
-                            title: "아직 기록이 없어요",
-                            message: "플랜을 골라 첫 세션을 뛰면 여기에 한 주가 쌓입니다."
-                        )
-                    } else {
-                        ForEach(months, id: \.month) { entry in
-                            SectionLabel(entry.month.formatted(.dateTime.year().month(.wide)))
-                            ForEach(entry.workouts) { workout in
-                                NavigationLink(value: workout) {
-                                    WorkoutCard(workout: workout, unit: unit)
+                if workouts.isEmpty {
+                    EmptyCard(
+                        systemImage: "clock",
+                        title: "아직 기록이 없어요",
+                        message: "플랜을 골라 첫 세션을 뛰면 여기에 한 주가 쌓입니다."
+                    )
+                    .cardRow()
+                } else {
+                    ForEach(months, id: \.month) { entry in
+                        SectionLabel(entry.month.formatted(.dateTime.year().month(.wide)))
+                            .cardRow(bottom: 4)
+                        ForEach(entry.workouts) { workout in
+                            NavigationLink(value: workout) {
+                                WorkoutCard(workout: workout, unit: unit)
+                            }
+                            .buttonStyle(.plain)
+                            .cardRow()
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    modelContext.delete(workout)
+                                } label: {
+                                    Label("삭제", systemImage: "trash")
                                 }
-                                .buttonStyle(.plain)
-                                .contextMenu {
-                                    Button(role: .destructive) {
-                                        modelContext.delete(workout)
-                                    } label: {
-                                        Label("삭제", systemImage: "trash")
-                                    }
+                            }
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    modelContext.delete(workout)
+                                } label: {
+                                    Label("삭제", systemImage: "trash")
                                 }
                             }
                         }
                     }
                 }
-                .padding(.horizontal, Metrics.screenPadding)
-                .padding(.top, 8)
-                .padding(.bottom, 24)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .background(Color.screenBackground)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Workout.self) { workout in

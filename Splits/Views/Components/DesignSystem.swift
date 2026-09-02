@@ -20,6 +20,8 @@ enum Metrics {
     static let cardPadding: CGFloat = 16
     static let cardSpacing: CGFloat = 12
     static let cardRadius: CGFloat = 20
+    /// 헤더와 첫 카드 사이. 버튼 바로 밑이 카드에 눌리지 않게 넓게 둔다.
+    static let headerGap: CGFloat = 24
 }
 
 struct CardModifier: ViewModifier {
@@ -38,6 +40,14 @@ extension View {
     func card(padding: CGFloat = Metrics.cardPadding, background: Color = .card) -> some View {
         modifier(CardModifier(padding: padding, background: background))
     }
+
+    /// List 안에서 카드처럼 보이게. 구분선·행 배경을 없애고 카드 간격만 남긴다.
+    func cardRow(top: CGFloat = 0, bottom: CGFloat = Metrics.cardSpacing) -> some View {
+        self
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: top, leading: Metrics.screenPadding, bottom: bottom, trailing: Metrics.screenPadding))
+    }
 }
 
 /// 화면 맨 위 한 줄. 왼쪽은 작은 아이브로우, 오른쪽은 동작 버튼.
@@ -53,7 +63,7 @@ struct ScreenHeader<Trailing: View>: View {
             Spacer()
             trailing
         }
-        .frame(minHeight: 36)
+        .frame(minHeight: 44)
         .padding(.horizontal, 4)
     }
 }
@@ -67,8 +77,8 @@ struct CircleIconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 16, weight: .semibold))
-                .frame(width: 36, height: 36)
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 44, height: 44)
                 .background(Color.card, in: Circle())
                 .contentShape(Circle())
         }
@@ -89,8 +99,8 @@ struct CircleIconMenu<Content: View>: View {
             content
         } label: {
             Image(systemName: systemImage)
-                .font(.system(size: 16, weight: .semibold))
-                .frame(width: 36, height: 36)
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 44, height: 44)
                 .background(Color.card, in: Circle())
                 .contentShape(Circle())
         }
