@@ -58,6 +58,29 @@ struct PlanBlueprintTests {
         #expect(timePlan.plannedDuration == 180 * 6 + 60 * 5)
     }
 
+    @Test func estimatedDurationAddsGoalTimes() {
+        var run = SegmentSpec.run(meters: 400)
+        run.goalValue = 120
+        let plan = PlanBlueprint(
+            name: "t",
+            segments: [run, .rest(meters: 200)],
+            repeatCount: 3,
+            warmupSeconds: 300,
+            cooldownSeconds: 300
+        )
+        // 워밍업 300 + 달리기 120×3 + 쿨다운 300. 회복 200m는 목표가 없어 빠진다(2개).
+        let estimate = plan.estimatedDuration
+        #expect(estimate.seconds == 300 + 360 + 300)
+        #expect(estimate.unknownSteps == 2)
+        #expect(Formatters.estimatedDuration(plan) == "16:00+")
+
+        var rest = SegmentSpec.rest(meters: 200)
+        rest.goalValue = 60
+        let complete = PlanBlueprint(name: "t", segments: [run, rest], repeatCount: 3, warmupSeconds: 300, cooldownSeconds: 300)
+        #expect(complete.estimatedDuration.unknownSteps == 0)
+        #expect(Formatters.estimatedDuration(complete) == "18:00")
+    }
+
     @Test func repeatCountNeverBelowOne() {
         let plan = PlanBlueprint(name: "t", segments: [.run(meters: 100)], repeatCount: 0)
         #expect(plan.steps().count == 1)
@@ -94,6 +117,6 @@ struct FormattersTests {
 
     @Test func planSummary() {
         let plan = PlanBlueprint(name: "t", segments: [.run(meters: 400), .rest(seconds: 90)], repeatCount: 8)
-        #expect(Formatters.planSummary(plan) == "RUN 400 m · REST 1:30 · 총 3.20 km + 10:30")
+        #expect(Formatters.planSummary(plan) == "RUN 400 m · REST 1:30 · 총 3.20 km · 약 10:30+")
     }
 }

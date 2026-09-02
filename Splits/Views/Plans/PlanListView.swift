@@ -182,8 +182,8 @@ struct HeroPlanCard: View {
                 HStack(alignment: .center) {
                     HStack(spacing: 6) {
                         HeroChip(text: "\(blueprint.steps().count)구간")
-                        if blueprint.plannedDuration > 0 {
-                            HeroChip(text: Formatters.clock(blueprint.plannedDuration))
+                        if let estimate = Formatters.estimatedDuration(blueprint) {
+                            HeroChip(text: "약 \(estimate)")
                         }
                     }
                     Spacer()
@@ -263,8 +263,8 @@ struct PlanCard: View {
         if blueprint.plannedDistance > 0 {
             parts.append(Formatters.distance(blueprint.plannedDistance, unit: unit))
         }
-        if blueprint.plannedDuration > 0 {
-            parts.append(Formatters.clock(blueprint.plannedDuration))
+        if let estimate = Formatters.estimatedDuration(blueprint) {
+            parts.append("약 \(estimate)")
         }
         return parts.joined(separator: " · ")
     }

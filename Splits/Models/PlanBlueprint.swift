@@ -104,8 +104,28 @@ nonisolated struct PlanBlueprint: Hashable, Sendable {
         steps().compactMap(\.target.meters).reduce(0, +)
     }
 
-    /// 시간 목표 구간의 합(초). 거리 목표 구간은 포함하지 않는다.
+    /// 시간 기준 구간의 합(초). 거리 기준 구간은 포함하지 않는다.
     var plannedDuration: TimeInterval {
         steps().compactMap(\.target.seconds).reduce(0, +)
+    }
+
+    /// 예상 소요 시간. 워밍업 + 각 구간(시간 기준이면 그 시간, 거리 기준이면 목표 시간) + 쿨다운.
+    /// 목표가 없는 거리 구간은 더할 수 없어 `unknownSteps`로 센다.
+    var estimatedDuration: (seconds: TimeInterval, unknownSteps: Int) {
+        var total: TimeInterval = 0
+        var unknown = 0
+        for step in steps() {
+            switch step.target {
+            case .duration(let seconds):
+                total += seconds
+            case .distance:
+                if let goal = step.goalValue, goal > 0 {
+                    total += goal
+                } else {
+                    unknown += 1
+                }
+            }
+        }
+        return (total, unknown)
     }
 }
