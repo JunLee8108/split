@@ -79,11 +79,15 @@ final class WorkoutSession {
         }
     }
 
+    /// 초당 4번, 깨우는 여유 없이. 1초 간격이면 시스템 지연이 쌓여 화면 숫자가 하나씩 건너뛴다.
+    /// 경과 시간은 벽시계로 재므로 틱 간격은 정확도가 아니라 표시 부드러움만 정한다.
+    private static let tickInterval: Duration = .milliseconds(250)
+
     private func startTicking() {
         stopTicking()
         tickTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(1))
+                try? await Task.sleep(for: Self.tickInterval, tolerance: .zero)
                 guard let self, !Task.isCancelled else { break }
                 self.engine.tick(now: .now)
             }
