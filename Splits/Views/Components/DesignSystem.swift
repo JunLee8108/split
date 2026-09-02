@@ -41,6 +41,15 @@ extension View {
         modifier(CardModifier(padding: padding, background: background))
     }
 
+    /// List 행 전체를 탭하면 value로 이동하되, List가 붙이는 화살표는 숨긴다.
+    /// NavigationLink를 행으로 직접 쓰면 카드 밖에 화살표가 하나 더 생긴다.
+    func navigationRow<Value: Hashable>(to value: Value) -> some View {
+        self.background {
+            NavigationLink(value: value) { EmptyView() }
+                .opacity(0)
+        }
+    }
+
     /// List 안에서 카드처럼 보이게. 구분선·행 배경을 없애고 카드 간격만 남긴다.
     func cardRow(top: CGFloat = 0, bottom: CGFloat = Metrics.cardSpacing) -> some View {
         self

@@ -48,11 +48,9 @@ struct HistoryListView: View {
                         SectionLabel(entry.month.formatted(.dateTime.year().month(.wide)))
                             .cardRow(bottom: 4)
                         ForEach(entry.workouts) { workout in
-                            NavigationLink(value: workout) {
-                                WorkoutCard(workout: workout, unit: unit)
-                            }
-                            .buttonStyle(.plain)
-                            .cardRow()
+                            WorkoutCard(workout: workout, unit: unit)
+                                .navigationRow(to: workout)
+                                .cardRow()
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) {
                                     modelContext.delete(workout)

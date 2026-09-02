@@ -44,12 +44,10 @@ struct PlanListView: View {
                 .cardRow(top: 8, bottom: Metrics.headerGap)
 
                 if let featured {
-                    NavigationLink(value: featured) {
-                        HeroPlanCard(plan: featured, unit: unit) {
-                            activePlan = featured
-                        }
+                    HeroPlanCard(plan: featured, unit: unit) {
+                        activePlan = featured
                     }
-                    .buttonStyle(.plain)
+                    .navigationRow(to: featured)
                     .cardRow()
                 }
 
@@ -68,11 +66,9 @@ struct PlanListView: View {
                     SectionLabel("내 플랜")
                         .cardRow(bottom: 4)
                     ForEach(plans) { plan in
-                        NavigationLink(value: plan) {
-                            PlanCard(plan: plan, unit: unit)
-                        }
-                        .buttonStyle(.plain)
-                        .cardRow()
+                        PlanCard(plan: plan, unit: unit)
+                            .navigationRow(to: plan)
+                            .cardRow()
                         .swipeActions(edge: .leading) {
                             Button {
                                 activePlan = plan
