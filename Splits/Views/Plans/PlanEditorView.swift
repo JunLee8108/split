@@ -24,7 +24,7 @@ struct PlanEditorView: View {
 
     init(plan: IntervalPlan?) {
         self.plan = plan
-        _draft = State(initialValue: plan.map(PlanDraft.init(plan:)) ?? PlanDraft.new())
+        _draft = State(initialValue: plan.map { PlanDraft(plan: $0) } ?? PlanDraft.new())
     }
 
     var body: some View {

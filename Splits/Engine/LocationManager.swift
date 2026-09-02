@@ -63,7 +63,7 @@ final class LocationManager {
             timestamp: location.timestamp,
             horizontalAccuracy: location.horizontalAccuracy,
             speed: location.speed,
-            isStationary: update.isStationary
+            isStationary: update.stationary
         )
         latestSample = sample
         onSample?(sample)
