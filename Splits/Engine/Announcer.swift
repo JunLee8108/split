@@ -69,6 +69,17 @@ final class Announcer {
         case .countdown(let seconds):
             speak("\(seconds)", interrupting: true)
 
+        case .goalTimeRemaining(let seconds):
+            speak("목표까지 \(Formatters.spokenDuration(TimeInterval(seconds)))")
+            lightImpact.impactOccurred()
+
+        case .goalCountdown(let seconds):
+            speak("\(seconds)", interrupting: true)
+
+        case .goalTimeExceeded:
+            speak("목표 시간 초과")
+            heavyImpact.impactOccurred()
+
         case .approaching(let remaining):
             speak("\(Formatters.spokenDistance(remaining.rounded(), unit: unit)) 남았습니다")
             lightImpact.impactOccurred()

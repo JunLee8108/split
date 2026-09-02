@@ -90,4 +90,47 @@ struct TimeMilestoneTests {
         for s in 1...269 { engine.tick(now: t0.addingTimeInterval(TimeInterval(s))) }
         #expect(milestones == [60, 30, 10, 60, 30, 10, 60, 30, 10])
     }
+
+    // MARK: 거리 구간 + 목표 시간
+
+    private func runDistance(goal: TimeInterval, ticks: [TimeInterval]) -> (milestones: [Int], countdown: [Int], exceeded: Int) {
+        let engine = WorkoutEngine()
+        var milestones: [Int] = []
+        var countdowns: [Int] = []
+        var exceeded = 0
+        engine.onEvent = { event in
+            switch event {
+            case .goalTimeRemaining(let s): milestones.append(s)
+            case .goalCountdown(let s): countdowns.append(s)
+            case .goalTimeExceeded: exceeded += 1
+            case .timeRemaining, .countdown: Issue.record("distance step must not emit segment-time events")
+            default: break
+            }
+        }
+        var run = SegmentSpec.run(meters: 400)
+        run.goalValue = goal
+        let plan = PlanBlueprint(name: "t", segments: [run], repeatCount: 1)
+        engine.start(planName: plan.name, steps: plan.steps(), at: t0)
+        for tick in ticks {
+            engine.tick(now: t0.addingTimeInterval(tick))
+        }
+        return (milestones, countdowns, exceeded)
+    }
+
+    @Test func distanceStepAnnouncesAgainstGoalTime() {
+        let result = runDistance(goal: 120, ticks: everySecond(upTo: 130))
+        #expect(result.milestones == [60, 30, 10])
+        #expect(result.countdown == [5, 4, 3, 2, 1])
+        #expect(result.exceeded == 1)
+    }
+
+    @Test func distanceStepWithoutGoalStaysSilent() {
+        let engine = WorkoutEngine()
+        var events: [WorkoutEvent] = []
+        engine.onEvent = { events.append($0) }
+        let plan = PlanBlueprint(name: "t", segments: [.run(meters: 400)], repeatCount: 1)
+        engine.start(planName: plan.name, steps: plan.steps(), at: t0)
+        for s in 1...200 { engine.tick(now: t0.addingTimeInterval(TimeInterval(s))) }
+        #expect(events.count == 1)  // stepStarted 뿐
+    }
 }
