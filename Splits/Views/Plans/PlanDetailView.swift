@@ -25,10 +25,14 @@ struct PlanDetailView: View {
                 if blueprint.plannedDistance > 0 {
                     LabeledContent("계획 거리", value: Formatters.distance(blueprint.plannedDistance, unit: unit))
                 }
-                if blueprint.plannedDuration > 0 {
-                    LabeledContent("계획 시간", value: Formatters.clock(blueprint.plannedDuration))
+                if let estimate = Formatters.estimatedDuration(blueprint) {
+                    LabeledContent("예상 시간", value: estimate)
                 }
                 LabeledContent("반복", value: "× \(blueprint.repeatCount)")
+            } footer: {
+                if blueprint.estimatedDuration.unknownSteps > 0 {
+                    Text("목표 시간이 없는 거리 구간 \(blueprint.estimatedDuration.unknownSteps)개는 예상 시간에서 빠졌어요. 구간을 편집해 목표를 넣으면 정확해집니다.")
+                }
             }
 
             Section("구간") {
