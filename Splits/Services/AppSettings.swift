@@ -44,4 +44,8 @@ enum AppSettings {
     static var keepScreenOn: Bool {
         UserDefaults.standard.object(forKey: keepScreenOnKey) as? Bool ?? true
     }
+
+    static var saveToHealth: Bool {
+        UserDefaults.standard.bool(forKey: saveToHealthKey)
+    }
 }

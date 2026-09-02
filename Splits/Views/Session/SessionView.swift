@@ -84,6 +84,11 @@ struct SessionView: View {
                     unit: unit,
                     onSave: {
                         Workout.save(summary, into: modelContext)
+                        if AppSettings.saveToHealth {
+                            Task {
+                                try? await HealthKitService.shared.save(summary)
+                            }
+                        }
                         dismiss()
                     },
                     onDiscard: {
@@ -128,6 +133,7 @@ struct SessionView: View {
 /// 어두운 바탕 위에 구간 색을 옅게 얹는다. 구간이 바뀌면 색이 부드럽게 넘어간다.
 struct SessionBackground: View {
     let kind: StepKind
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     static let base = Color(red: 16 / 255, green: 18 / 255, blue: 21 / 255)
 
@@ -141,7 +147,7 @@ struct SessionBackground: View {
                 .offset(x: 150, y: -260)
         }
         .ignoresSafeArea()
-        .animation(.easeInOut(duration: 0.4), value: kind)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.4), value: kind)
     }
 }
 
@@ -215,6 +221,7 @@ struct ProgressBar: View {
 struct SessionMetrics: View {
     let engine: WorkoutEngine
     let unit: DistanceUnit
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(spacing: 28) {
@@ -232,12 +239,23 @@ struct SessionMetrics: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(accessibilityText)
 
-            HStack(alignment: .top, spacing: 0) {
-                Stat(value: Formatters.pace(engine.currentPace, unit: unit), label: "현재 페이스")
-                Stat(value: distance.value, label: distance.unit)
-                Stat(value: Formatters.clock(engine.tracker?.elapsed ?? 0), label: "이번 구간")
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(spacing: 14) {
+                    stats
+                }
+            } else {
+                HStack(alignment: .top, spacing: 0) {
+                    stats
+                }
             }
         }
+    }
+
+    @ViewBuilder
+    private var stats: some View {
+        Stat(value: Formatters.pace(engine.currentPace, unit: unit), label: "현재 페이스")
+        Stat(value: distance.value, label: distance.unit)
+        Stat(value: Formatters.clock(engine.tracker?.elapsed ?? 0), label: "이번 구간")
     }
 
     private var distance: (value: String, unit: String) {
