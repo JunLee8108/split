@@ -12,6 +12,7 @@ struct PlanDetailView: View {
     let plan: IntervalPlan
     @AppStorage(AppSettings.distanceUnitKey) private var unitRaw = DistanceUnit.metric.rawValue
     @State private var isRunning = false
+    @State private var isEditing = false
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
     private var blueprint: PlanBlueprint { plan.blueprint }
@@ -47,6 +48,14 @@ struct PlanDetailView: View {
         }
         .navigationTitle(plan.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("편집") { isEditing = true }
+            }
+        }
+        .sheet(isPresented: $isEditing) {
+            PlanEditorView(plan: plan)
+        }
         .safeAreaInset(edge: .bottom) {
             Button {
                 isRunning = true
