@@ -128,7 +128,7 @@ SplitsTests/       SegmentTrackerTests, WorkoutEngineTests, PaceMathTests
 - [x] Phase 3 — SessionView(진행 바·구간 배지·큰 숫자·지표 3개·일시정지/재개/길게 눌러 종료·두 번 탭 넘김), 플랜 상세 시작 버튼과 목록 스와이프 시작, 종료 요약 시트(저장/버리기). 실외 검증은 사용자 몫
 - [x] Phase 4 — PlanEditorView(초안 값 타입 편집, 저장 시에만 모델 반영), 구간 시트(종류·거리/시간·휠), 순서 변경·삭제, 반복, 워밍업·쿨다운, 예상치 실시간
 - [x] Phase 5 — 기록 목록 날짜별 섹션 + Canvas 경로 스케치, WorkoutDetailView(구간 색 MapPolyline 지도 → 요약 3개 → 랩 테이블, 전체 화면 지도, 삭제), LapRow/LapHighlight 공용화
-- [ ] Phase 6 — HealthKit, 아이콘, 접근성, TestFlight
+- [x] Phase 6 — HealthKitService(러닝 워크아웃 + 거리 + 경로), 설정 건강 토글·버전, 앱 아이콘(라이트/다크/틴트), 접근성(큰 글씨 세로 지표, 동작 줄이기, VoiceOver 커스텀 액션), 출시 체크리스트 docs/RELEASE.md
 
 메모
 - Xcode 없이 작성한 코드다. 첫 빌드에서 경고·오류가 나면 그 로그를 기준으로 고친다.
