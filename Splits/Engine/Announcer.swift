@@ -62,11 +62,16 @@ final class Announcer {
                 heavyImpact.impactOccurred(intensity: 1.0)
             }
 
+        case .timeRemaining(let seconds):
+            speak("\(Formatters.spokenDuration(TimeInterval(seconds))) 남았습니다")
+            lightImpact.impactOccurred()
+
         case .countdown(let seconds):
             speak("\(seconds)", interrupting: true)
 
         case .approaching(let remaining):
-            speak("\(Formatters.spokenDistance(remaining.rounded(), unit: unit)) 남음")
+            speak("\(Formatters.spokenDistance(remaining.rounded(), unit: unit)) 남았습니다")
+            lightImpact.impactOccurred()
 
         case .kilometer(let count, let splitPace):
             var text = Formatters.spokenDistance(Double(count) * 1000, unit: unit)
