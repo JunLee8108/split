@@ -117,6 +117,8 @@ struct SessionView: View {
                 }
             }
             .font(.footnote.weight(.semibold))
+            .buttonStyle(.bordered)
+            .controlSize(.small)
         }
         .padding(12)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
