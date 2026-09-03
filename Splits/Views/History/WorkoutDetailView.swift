@@ -16,6 +16,7 @@ struct WorkoutDetailView: View {
     @AppStorage(AppSettings.distanceUnitKey) private var unitRaw = DistanceUnit.metric.rawValue
     @State private var showFullMap = false
     @State private var confirmDelete = false
+    @State private var showShare = false
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
     private var laps: [LapRecord] { workout.lapRecords }
@@ -83,13 +84,21 @@ struct WorkoutDetailView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    showShare = true
+                } label: {
+                    Label("공유", systemImage: "square.and.arrow.up")
+                }
                 Button(role: .destructive) {
                     confirmDelete = true
                 } label: {
                     Label("삭제", systemImage: "trash")
                 }
             }
+        }
+        .sheet(isPresented: $showShare) {
+            ShareWorkoutView(workout: workout.shareable)
         }
         .confirmationDialog("이 기록을 삭제할까요?", isPresented: $confirmDelete, titleVisibility: .visible) {
             Button("삭제", role: .destructive) {
