@@ -157,7 +157,7 @@ struct ShareTextTests {
             planName: "400m × 2",
             startedAt: Date(timeIntervalSince1970: 1_756_800_000),
             totalDistance: 1600,
-            movingTime: 564,
+            movingTime: 560,
             laps: laps,
             route: []
         )
@@ -165,7 +165,7 @@ struct ShareTextTests {
         let lines = text.split(separator: "\n").map(String.init)
         #expect(lines.count == 5)
         #expect(lines[0].hasPrefix("400m × 2 · "))
-        #expect(lines[1] == "1.60 km · 9:24 · 5'52\"/km")
+        #expect(lines[1] == "1.60 km · 9:20 · 5'50\"/km")
         #expect(lines[2] == "달리기 2: 1:35 · 1:43")
         #expect(lines[3] == "목표 달성 1 / 2")
         #expect(lines[4] == "Splits")
