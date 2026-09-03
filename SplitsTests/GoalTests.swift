@@ -121,4 +121,26 @@ struct GoalEngineTests {
         let noGoal = LapRecord(index: 2, kind: .run, target: .distance(400), distance: 400, duration: 88, ordinal: 2)
         #expect(announcer.resultPhrase(for: noGoal) == nil)
     }
+
+    @Test func lapTableGroupsBySet() {
+        let laps = [
+            LapRecord(index: 0, kind: .warmup, target: .duration(300), distance: 500, duration: 300),
+            LapRecord(index: 1, kind: .run, target: .distance(400), distance: 400, duration: 95, setIndex: 1),
+            LapRecord(index: 2, kind: .rest, target: .distance(200), distance: 200, duration: 66, setIndex: 1),
+            LapRecord(index: 3, kind: .run, target: .distance(400), distance: 400, duration: 103, setIndex: 2),
+            LapRecord(index: 4, kind: .cooldown, target: .duration(120), distance: 200, duration: 120),
+        ]
+        let rows = LapTableLayout.rows(for: laps)
+        #expect(rows.map(\.number) == [nil, "1", nil, "2", nil])
+        #expect(rows.map(\.startsSet) == [false, false, false, true, false])
+    }
+
+    @Test func lapTableFallsBackToSequenceForOldRecords() {
+        let laps = [
+            LapRecord(index: 0, kind: .run, target: .distance(400), distance: 400, duration: 95),
+            LapRecord(index: 1, kind: .rest, target: .duration(90), distance: 0, duration: 90),
+        ]
+        #expect(!LapTableLayout.isGrouped(laps))
+        #expect(LapTableLayout.rows(for: laps).map(\.number) == ["1", "2"])
+    }
 }
