@@ -14,6 +14,8 @@ struct HistoryListView: View {
     @Query(sort: \Workout.startedAt, order: .reverse) private var workouts: [Workout]
     @AppStorage(AppSettings.distanceUnitKey) private var unitRaw = DistanceUnit.metric.rawValue
 
+    @State private var sharing: Workout?
+
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
 
     private var months: [(month: Date, workouts: [Workout])] {
@@ -50,6 +52,11 @@ struct HistoryListView: View {
                                 }
                             }
                             .contextMenu {
+                                Button {
+                                    sharing = workout
+                                } label: {
+                                    Label("공유", systemImage: "square.and.arrow.up")
+                                }
                                 Button(role: .destructive) {
                                     modelContext.delete(workout)
                                 } label: {
@@ -66,6 +73,9 @@ struct HistoryListView: View {
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Workout.self) { workout in
                 WorkoutDetailView(workout: workout)
+            }
+            .sheet(item: $sharing) { workout in
+                ShareWorkoutView(workout: workout.shareable)
             }
         }
     }

@@ -144,3 +144,30 @@ struct GoalEngineTests {
         #expect(LapTableLayout.rows(for: laps).map(\.number) == ["1", "2"])
     }
 }
+
+struct ShareTextTests {
+    @Test func summaryHasHeadlineStatsAndRuns() {
+        let laps = [
+            LapRecord(index: 0, kind: .warmup, target: .duration(300), distance: 600, duration: 300),
+            LapRecord(index: 1, kind: .run, target: .distance(400), distance: 400, duration: 95, goalValue: 100, setIndex: 1),
+            LapRecord(index: 2, kind: .rest, target: .distance(200), distance: 200, duration: 66, setIndex: 1),
+            LapRecord(index: 3, kind: .run, target: .distance(400), distance: 400, duration: 103, goalValue: 100, setIndex: 2),
+        ]
+        let workout = ShareableWorkout(
+            planName: "400m × 2",
+            startedAt: Date(timeIntervalSince1970: 1_756_800_000),
+            totalDistance: 1600,
+            movingTime: 560,
+            laps: laps,
+            route: []
+        )
+        let text = ShareText.summary(workout)
+        let lines = text.split(separator: "\n").map(String.init)
+        #expect(lines.count == 5)
+        #expect(lines[0].hasPrefix("400m × 2 · "))
+        #expect(lines[1] == "1.60 km · 9:20 · 5'50\"/km")
+        #expect(lines[2] == "달리기 2: 1:35 · 1:43")
+        #expect(lines[3] == "목표 달성 1 / 2")
+        #expect(lines[4] == "Splits")
+    }
+}

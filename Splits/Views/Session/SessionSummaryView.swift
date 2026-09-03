@@ -14,6 +14,7 @@ struct SessionSummaryView: View {
     let onDiscard: () -> Void
 
     @State private var confirmDiscard = false
+    @State private var showShare = false
 
     var body: some View {
         NavigationStack {
@@ -27,6 +28,11 @@ struct SessionSummaryView: View {
                     )
                     if let goals = GoalSummary.compute(for: summary.laps) {
                         LabeledContent("목표 달성", value: "\(goals.met) / \(goals.total)")
+                    }
+                    Button {
+                        showShare = true
+                    } label: {
+                        Label("이미지로 공유", systemImage: "square.and.arrow.up")
                     }
                 }
 
@@ -60,6 +66,9 @@ struct SessionSummaryView: View {
                     Button("저장", action: onSave)
                         .fontWeight(.semibold)
                 }
+            }
+            .sheet(isPresented: $showShare) {
+                ShareWorkoutView(workout: ShareableWorkout(summary: summary))
             }
             .confirmationDialog("이 세션을 저장하지 않고 버릴까요?", isPresented: $confirmDiscard, titleVisibility: .visible) {
                 Button("버리기", role: .destructive, action: onDiscard)
