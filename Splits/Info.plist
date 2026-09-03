@@ -10,6 +10,11 @@
 	<string>완료한 인터벌 세션을 러닝 운동으로 건강 앱에 저장하기 위해 필요합니다.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>달리는 동안 거리와 페이스를 측정하고 구간을 자동으로 전환하기 위해 위치가 필요합니다.</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
