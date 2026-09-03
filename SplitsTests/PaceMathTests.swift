@@ -133,3 +133,33 @@ struct PaceCalculatorTests {
         #expect(calc.pace(at: origin.addingTimeInterval(10)) == nil)
     }
 }
+
+struct RoutePreviewTests {
+    private func route(count: Int, boundaryAt: Int) -> [RoutePoint] {
+        (0..<count).map { i in
+            RoutePoint(latitude: 37.5 + Double(i) * 0.00001, longitude: 127, timestamp: Date(timeIntervalSince1970: Double(i)), stepIndex: i < boundaryAt ? 0 : 1)
+        }
+    }
+
+    @Test func shortRouteIsKeptWhole() {
+        let r = route(count: 50, boundaryAt: 20)
+        #expect(RoutePreview.make(route: r, kinds: [:]).points.count == 50)
+    }
+
+    @Test func longRouteIsThinnedButKeepsBoundaryAndEnd() {
+        let r = route(count: 2700, boundaryAt: 1234)
+        let preview = RoutePreview.make(route: r, kinds: [0: .run, 1: .rest])
+        #expect(preview.points.count <= RoutePreview.maxPoints + 4)
+        #expect(preview.points.count >= RoutePreview.maxPoints / 2)
+        #expect(preview.points.contains { $0.timestamp == Date(timeIntervalSince1970: 1234) })
+        #expect(preview.points.last?.timestamp == Date(timeIntervalSince1970: 2699))
+        #expect(preview.kinds[1] == .rest)
+    }
+
+    @Test func previewRoundTripsThroughJSON() throws {
+        let preview = RoutePreview.make(route: route(count: 10, boundaryAt: 5), kinds: [0: .run, 1: .rest])
+        let data = try JSONEncoder().encode(preview)
+        let decoded = try JSONDecoder().decode(RoutePreview.self, from: data)
+        #expect(decoded == preview)
+    }
+}

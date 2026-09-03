@@ -15,6 +15,31 @@ nonisolated struct RoutePoint: Codable, Hashable, Sendable {
     var stepIndex: Int
 }
 
+/// 목록 스케치용 축소 경로. 전체 경로(수천 점) 대신 이것만 읽는다.
+nonisolated struct RoutePreview: Codable, Hashable, Sendable {
+    var points: [RoutePoint]
+    var kinds: [Int: StepKind]
+
+    static let maxPoints = 160
+
+    /// 균등하게 솎되 구간이 바뀌는 점과 마지막 점은 남긴다. 색 경계가 유지된다.
+    static func make(route: [RoutePoint], kinds: [Int: StepKind], maxPoints: Int = RoutePreview.maxPoints) -> RoutePreview {
+        guard route.count > maxPoints else { return RoutePreview(points: route, kinds: kinds) }
+        let stride = Int((Double(route.count) / Double(maxPoints)).rounded(.up))
+        var kept: [RoutePoint] = []
+        kept.reserveCapacity(maxPoints + 16)
+        var previousStep: Int?
+        for (offset, point) in route.enumerated() {
+            let boundary = previousStep != nil && point.stepIndex != previousStep
+            if offset % stride == 0 || boundary || offset == route.count - 1 {
+                kept.append(point)
+            }
+            previousStep = point.stepIndex
+        }
+        return RoutePreview(points: kept, kinds: kinds)
+    }
+}
+
 @Model
 final class Workout {
     var startedAt: Date
@@ -28,6 +53,8 @@ final class Workout {
     /// 플랜 이름 스냅샷. 플랜을 나중에 고쳐도 기록은 그대로다.
     var planName: String
     var routeData: Data
+    /// RoutePreview JSON. 저장 시 만들고, 옛 기록은 목록이 처음 볼 때 채운다.
+    var routePreviewData: Data?
 
     @Relationship(deleteRule: .cascade, inverse: \Lap.workout)
     var laps: [Lap]
@@ -56,6 +83,14 @@ final class Workout {
         set { routeData = (try? JSONEncoder().encode(newValue)) ?? Data() }
     }
 
+    var routePreview: RoutePreview? {
+        get {
+            guard let routePreviewData else { return nil }
+            return try? JSONDecoder().decode(RoutePreview.self, from: routePreviewData)
+        }
+        set { routePreviewData = try? JSONEncoder().encode(newValue) }
+    }
+
     var orderedLaps: [Lap] {
         laps.sorted { $0.index < $1.index }
     }
@@ -81,6 +116,8 @@ final class Workout {
             planName: summary.planName
         )
         workout.route = summary.route
+        let kinds = Dictionary(summary.laps.map { ($0.index, $0.kind) }, uniquingKeysWith: { first, _ in first })
+        workout.routePreview = RoutePreview.make(route: summary.route, kinds: kinds)
         context.insert(workout)
         workout.laps = summary.laps.map { Lap(record: $0) }
         return workout
