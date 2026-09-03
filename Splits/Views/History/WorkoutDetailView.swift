@@ -52,10 +52,16 @@ struct WorkoutDetailView: View {
                     Text("기록된 구간이 없어요.")
                         .foregroundStyle(.secondary)
                 } else {
-                    LapTableHeader()
+                    LapTableHeader(numberTitle: LapTableLayout.isGrouped(laps) ? "세트" : "#")
                 }
-                ForEach(laps, id: \.index) { lap in
-                    LapRow(lap: lap, unit: unit, highlight: highlights[lap.index])
+                ForEach(LapTableLayout.rows(for: laps)) { row in
+                    LapRow(
+                        lap: row.lap,
+                        unit: unit,
+                        highlight: highlights[row.lap.index],
+                        number: row.number,
+                        startsSet: row.startsSet
+                    )
                 }
             } header: {
                 Text("구간")

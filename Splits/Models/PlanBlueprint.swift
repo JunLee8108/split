@@ -31,6 +31,8 @@ nonisolated struct WorkoutStep: Hashable, Sendable {
     var ordinalTotal: Int
     /// 거리 구간이면 목표 시간(초), 시간 구간이면 목표 거리(미터).
     var goalValue: Double? = nil
+    /// 몇 번째 세트인지 (1부터). 세트 = 플랜의 구간 묶음을 한 번 도는 것. 워밍업·쿨다운은 nil.
+    var setIndex: Int? = nil
 
     /// 목표 페이스(초/km).
     var goalPace: TimeInterval? { GoalMath.pace(target: target, goalValue: goalValue) }
@@ -60,15 +62,15 @@ nonisolated struct PlanBlueprint: Hashable, Sendable {
     /// 플랜을 실행 순서대로 펼친다.
     /// 마지막 반복의 끝이 회복 구간이면 하나 제거한다. 마지막 달리기 뒤에 쉬는 건 세션 종료다.
     func steps() -> [WorkoutStep] {
-        var raw: [(kind: StepKind, target: SegmentTarget, goal: Double?)] = []
+        var raw: [(kind: StepKind, target: SegmentTarget, goal: Double?, set: Int?)] = []
 
         if let warmupSeconds, warmupSeconds > 0 {
-            raw.append((.warmup, .duration(warmupSeconds), nil))
+            raw.append((.warmup, .duration(warmupSeconds), nil, nil))
         }
 
-        for _ in 0..<repeatCount {
+        for repetition in 0..<repeatCount {
             for segment in segments {
-                raw.append((segment.kind, segment.target, segment.goalValue))
+                raw.append((segment.kind, segment.target, segment.goalValue, repetition + 1))
             }
         }
 
@@ -77,7 +79,7 @@ nonisolated struct PlanBlueprint: Hashable, Sendable {
         }
 
         if let cooldownSeconds, cooldownSeconds > 0 {
-            raw.append((.cooldown, .duration(cooldownSeconds), nil))
+            raw.append((.cooldown, .duration(cooldownSeconds), nil, nil))
         }
 
         var totals: [StepKind: Int] = [:]
@@ -94,7 +96,8 @@ nonisolated struct PlanBlueprint: Hashable, Sendable {
                 index: index,
                 ordinal: counters[entry.kind] ?? 1,
                 ordinalTotal: totals[entry.kind] ?? 1,
-                goalValue: entry.goal
+                goalValue: entry.goal,
+                setIndex: entry.set
             )
         }
     }
