@@ -50,7 +50,7 @@ nonisolated enum LapTableLayout {
         var previousSet: Int?
         return laps.map { lap in
             let starts = lap.setIndex != nil && lap.setIndex != previousSet
-            let number = starts ? lap.setIndex.map(String.init) : nil
+            let number = starts ? lap.setIndex.map { String($0) } : nil
             if lap.setIndex != nil { previousSet = lap.setIndex }
             return LapTableRow(lap: lap, number: number, startsSet: starts && previousSet != nil && lap.setIndex != 1)
         }
