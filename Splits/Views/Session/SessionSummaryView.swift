@@ -35,10 +35,16 @@ struct SessionSummaryView: View {
                         Text("기록된 구간이 없어요.")
                             .foregroundStyle(.secondary)
                     } else {
-                        LapTableHeader()
+                        LapTableHeader(numberTitle: LapTableLayout.isGrouped(summary.laps) ? "세트" : "#")
                     }
-                    ForEach(summary.laps, id: \.index) { lap in
-                        LapRow(lap: lap, unit: unit, highlight: highlight(for: lap))
+                    ForEach(LapTableLayout.rows(for: summary.laps)) { row in
+                        LapRow(
+                            lap: row.lap,
+                            unit: unit,
+                            highlight: highlight(for: row.lap),
+                            number: row.number,
+                            startsSet: row.startsSet
+                        )
                     }
                 }
             }

@@ -69,7 +69,8 @@ nonisolated struct SegmentTracker: Hashable, Sendable {
             distance: distance,
             duration: elapsed,
             goalValue: step.goalValue,
-            ordinal: step.ordinal
+            ordinal: step.ordinal,
+            setIndex: step.setIndex
         )
     }
 }
@@ -84,6 +85,8 @@ nonisolated struct LapRecord: Hashable, Sendable {
     var goalValue: Double? = nil
     /// 같은 종류 중 몇 번째인지. 저장된 기록에서는 0(모름).
     var ordinal: Int = 0
+    /// 몇 번째 세트인지 (1부터). 워밍업·쿨다운과 옛 기록은 nil.
+    var setIndex: Int? = nil
 
     var pace: TimeInterval? { PaceMath.pace(distance: distance, duration: duration) }
 

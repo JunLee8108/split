@@ -81,6 +81,19 @@ struct PlanBlueprintTests {
         #expect(Formatters.estimatedDuration(complete) == "18:00")
     }
 
+    @Test func setIndexFollowsRepetitions() {
+        let plan = PlanBlueprint(
+            name: "t",
+            segments: [.run(meters: 400), .run(meters: 200), .rest(seconds: 60)],
+            repeatCount: 2,
+            warmupSeconds: 300,
+            cooldownSeconds: 120
+        )
+        let sets = plan.steps().map(\.setIndex)
+        // 워밍업 nil, 1세트 3개, 2세트 2개(마지막 회복 제외), 쿨다운 nil
+        #expect(sets == [nil, 1, 1, 1, 2, 2, nil])
+    }
+
     @Test func repeatCountNeverBelowOne() {
         let plan = PlanBlueprint(name: "t", segments: [.run(meters: 100)], repeatCount: 0)
         #expect(plan.steps().count == 1)

@@ -27,12 +27,44 @@ enum LapHighlight {
     }
 }
 
+/// 표의 한 줄. 세트 번호는 세트의 첫 줄에만 붙는다.
+nonisolated struct LapTableRow: Identifiable, Hashable, Sendable {
+    let lap: LapRecord
+    /// 왼쪽 번호. 세트 첫 줄이면 세트 번호, 옛 기록이면 순번, 워밍업·쿨다운이나 세트 안 나머지 줄이면 nil.
+    let number: String?
+    /// 새 세트가 시작되는 줄. 위 여백으로 묶음을 나눈다.
+    let startsSet: Bool
+    var id: Int { lap.index }
+}
+
+nonisolated enum LapTableLayout {
+    /// 세트 번호가 하나라도 있으면 세트 기준, 없으면(옛 기록) 순번 기준.
+    static func isGrouped(_ laps: [LapRecord]) -> Bool {
+        laps.contains { $0.setIndex != nil }
+    }
+
+    static func rows(for laps: [LapRecord]) -> [LapTableRow] {
+        guard isGrouped(laps) else {
+            return laps.map { LapTableRow(lap: $0, number: "\($0.index + 1)", startsSet: false) }
+        }
+        var previousSet: Int?
+        return laps.map { lap in
+            let starts = lap.setIndex != nil && lap.setIndex != previousSet
+            let number = starts ? lap.setIndex.map { String($0) } : nil
+            if lap.setIndex != nil { previousSet = lap.setIndex }
+            return LapTableRow(lap: lap, number: number, startsSet: starts && previousSet != nil && lap.setIndex != 1)
+        }
+    }
+}
+
 /// 랩 표 열 제목. LapRow와 같은 폭을 쓴다.
 struct LapTableHeader: View {
+    var numberTitle = "세트"
+
     var body: some View {
         HStack(spacing: 12) {
-            Text("#")
-                .frame(width: 22, alignment: .trailing)
+            Text(numberTitle)
+                .frame(width: 30, alignment: .trailing)
             Text("구간")
             Spacer()
             Text("시간")
@@ -81,13 +113,16 @@ struct LapRow: View {
     let lap: LapRecord
     let unit: DistanceUnit
     var highlight: LapHighlight? = nil
+    var number: String? = nil
+    var startsSet = false
 
     var body: some View {
         HStack(spacing: 12) {
-            Text("\(lap.index + 1)")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.tertiary)
-                .frame(width: 22, alignment: .trailing)
+            Text(number ?? "")
+                .font(.system(.footnote, design: .rounded).weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .frame(width: 30, alignment: .trailing)
             StepBadge(kind: lap.kind)
             Text(Formatters.target(lap.target, unit: unit))
                 .font(.subheadline)
@@ -116,6 +151,7 @@ struct LapRow: View {
             .frame(width: 76, alignment: .trailing)
         }
         .font(.body)
+        .padding(.top, startsSet ? 10 : 0)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityText)
     }
@@ -137,7 +173,11 @@ struct LapRow: View {
     }
 
     private var accessibilityText: String {
-        var parts = ["\(lap.index + 1)번째, \(lap.kind.koreanName), \(Formatters.spokenDuration(lap.duration))"]
+        var parts: [String] = []
+        if let set = lap.setIndex {
+            parts.append("\(set)세트")
+        }
+        parts.append("\(lap.kind.koreanName), \(Formatters.spokenDuration(lap.duration))")
         if let spoken = Formatters.spokenPace(lap.pace, unit: unit) {
             parts.append("페이스 \(spoken)")
         }
