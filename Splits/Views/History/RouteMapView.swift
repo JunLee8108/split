@@ -134,3 +134,20 @@ struct RouteSketch: View {
         .accessibilityHidden(true)
     }
 }
+
+/// 앱 시작 직후 보이지 않게 한 번 띄워 MapKit을 미리 데운다.
+/// 첫 지도 생성은 수백 ms가 걸려 첫 푸시 애니메이션을 삼킨다.
+struct MapWarmupView: View {
+    var body: some View {
+        Map(initialPosition: .region(MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 37.5665, longitude: 126.9780),
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        )), interactionModes: [])
+        .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
+        .mapControlVisibility(.hidden)
+        .frame(width: 1, height: 1)
+        .opacity(0.01)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
