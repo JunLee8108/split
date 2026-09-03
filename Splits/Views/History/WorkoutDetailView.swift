@@ -7,6 +7,7 @@
 //  경로 JSON을 반복해서 읽으면 첫 진입의 전환 애니메이션이 통째로 사라진다.
 //
 
+import Foundation
 import SwiftData
 import SwiftUI
 
@@ -91,17 +92,11 @@ struct WorkoutDetailView: View {
             }
         }
         .navigationTitle(workout.planName)
+        // 커스텀 principal 제목 뷰는 첫 푸시 전환을 삼킨다. 시스템 제목 + 부제목을 쓴다.
+        .navigationSubtitle(workout.startedAt.formatted(.dateTime.month().day().hour().minute()))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                VStack(spacing: 0) {
-                    Text(workout.planName).font(.headline)
-                    Text(workout.startedAt, format: .dateTime.month().day().hour().minute())
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
                     showShare = true
