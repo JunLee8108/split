@@ -17,6 +17,8 @@ struct WorkoutDetailView: View {
     @State private var showFullMap = false
     @State private var confirmDelete = false
     @State private var showShare = false
+    /// 푸시 전환이 끝난 뒤에 지도를 넣는다. 첫 지도 생성이 무거워 전환 프레임을 잡아먹는다.
+    @State private var mapReady = false
 
     private var unit: DistanceUnit { DistanceUnit(rawValue: unitRaw) ?? .metric }
     private var laps: [LapRecord] { workout.lapRecords }
@@ -25,7 +27,18 @@ struct WorkoutDetailView: View {
     var body: some View {
         List {
             Section {
-                RouteMapView(route: workout.route, kinds: workout.stepKinds, interactive: false)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.cardSecondary)
+                    if workout.route.count >= 2 {
+                        RouteSketch(route: workout.route, kinds: workout.stepKinds)
+                            .padding(24)
+                    }
+                    if mapReady {
+                        RouteMapView(route: workout.route, kinds: workout.stepKinds, interactive: false)
+                            .transition(.opacity)
+                    }
+                }
                     .frame(height: 240)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .contentShape(Rectangle())
@@ -99,6 +112,13 @@ struct WorkoutDetailView: View {
         }
         .sheet(isPresented: $showShare) {
             ShareWorkoutView(workout: workout.shareable)
+        }
+        .task {
+            guard !mapReady else { return }
+            try? await Task.sleep(for: .milliseconds(450))
+            withAnimation(.easeOut(duration: 0.25)) {
+                mapReady = true
+            }
         }
         .confirmationDialog("이 기록을 삭제할까요?", isPresented: $confirmDelete, titleVisibility: .visible) {
             Button("삭제", role: .destructive) {

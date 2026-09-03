@@ -34,6 +34,10 @@ struct ContentView: View {
                 .transition(.opacity)
                 .zIndex(1)
             }
+
+            // 인트로가 도는 동안 MapKit을 예열한다. 기록 상세 첫 진입이 부드러워진다.
+            MapWarmupView()
+                .zIndex(-1)
         }
         .task {
             Presets.insertInitialIfNeeded(into: modelContext)
