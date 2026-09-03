@@ -30,6 +30,15 @@ struct WorkoutDetailView: View {
         List {
             Section {
                 mapArea
+                    // 삭제 확인 다이얼로그는 루트가 아니라 안쪽 뷰에 붙인다.
+                    // 목적지 루트에 붙은 alert/confirmationDialog가 첫 푸시 전환을 삼키는 문제가 있다.
+                    .confirmationDialog("이 기록을 삭제할까요?", isPresented: $confirmDelete, titleVisibility: .visible) {
+                        Button("삭제", role: .destructive) {
+                            modelContext.delete(workout)
+                            dismiss()
+                        }
+                        Button("취소", role: .cancel) {}
+                    }
                     .frame(height: 240)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .contentShape(Rectangle())
@@ -109,13 +118,6 @@ struct WorkoutDetailView: View {
                     Label("삭제", systemImage: "trash")
                 }
             }
-        }
-        .confirmationDialog("이 기록을 삭제할까요?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("삭제", role: .destructive) {
-                modelContext.delete(workout)
-                dismiss()
-            }
-            Button("취소", role: .cancel) {}
         }
         .sheet(isPresented: $showFullMap) {
             if let snapshot {
