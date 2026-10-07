@@ -102,6 +102,7 @@ final class HealthRecorder {
     /// 거리·심박·칼로리 샘플은 워치가 직접 잰 값이 들어간다.
     func save(_ summary: WorkoutSummary) async {
         guard let builder else { return }
+        defer { reset() }
         end()
         await collectionStart?.value
         do {
@@ -112,7 +113,6 @@ final class HealthRecorder {
         } catch {
             // 건강 앱 저장이 실패해도 기록은 iPhone으로 간다.
         }
-        reset()
     }
 
     func discard() {

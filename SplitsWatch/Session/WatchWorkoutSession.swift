@@ -40,8 +40,9 @@ final class WatchWorkoutSession {
         isBackgroundUnavailable = !(await recorder.prepare())
     }
 
+    /// 한 세션에 한 번만. 끝난 엔진을 다시 시작하지 않는다.
     func start(blueprint: PlanBlueprint) {
-        guard !engine.isActive else { return }
+        guard engine.state == .idle else { return }
 
         let settings = AppSettings.session
         announcer.isVoiceEnabled = settings.voiceEnabled
