@@ -75,7 +75,7 @@ nonisolated struct SegmentTracker: Hashable, Sendable {
     }
 }
 
-nonisolated struct LapRecord: Hashable, Sendable {
+nonisolated struct LapRecord: Hashable, Codable, Sendable {
     var index: Int
     var kind: StepKind
     var target: SegmentTarget
@@ -104,5 +104,14 @@ nonisolated struct LapRecord: Hashable, Sendable {
     var goalMet: Bool? {
         guard let delta = goalDelta else { return nil }
         return target.isDistance ? delta <= 0 : delta >= 0
+    }
+}
+
+/// 목표를 둔 달리기 구간 중 몇 개를 달성했는지.
+nonisolated enum GoalSummary {
+    static func compute(for laps: [LapRecord]) -> (met: Int, total: Int)? {
+        let withGoal = laps.filter { $0.kind == .run && $0.goalMet != nil }
+        guard !withGoal.isEmpty else { return nil }
+        return (withGoal.filter { $0.goalMet == true }.count, withGoal.count)
     }
 }

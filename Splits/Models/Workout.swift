@@ -6,15 +6,6 @@
 import Foundation
 import SwiftData
 
-/// 경로의 한 점. 구조체 배열을 JSON으로 직렬화해 Workout.routeData에 저장한다.
-nonisolated struct RoutePoint: Codable, Hashable, Sendable {
-    var latitude: Double
-    var longitude: Double
-    var timestamp: Date
-    /// 이 점이 속한 스텝의 index.
-    var stepIndex: Int
-}
-
 /// 목록 스케치용 축소 경로. 전체 경로(수천 점) 대신 이것만 읽는다.
 nonisolated struct RoutePreview: Codable, Hashable, Sendable {
     var points: [RoutePoint]
@@ -55,6 +46,8 @@ final class Workout {
     var routeData: Data
     /// RoutePreview JSON. 저장 시 만들고, 옛 기록은 목록이 처음 볼 때 채운다.
     var routePreviewData: Data?
+    /// 어디서 기록했는지. iPhone 기록과 옛 기록은 nil, 워치에서 받은 기록은 `watchSource`.
+    var source: String?
 
     @Relationship(deleteRule: .cascade, inverse: \Lap.workout)
     var laps: [Lap]
@@ -90,6 +83,10 @@ final class Workout {
         }
         set { routePreviewData = try? JSONEncoder().encode(newValue) }
     }
+
+    static let watchSource = "watch"
+
+    var isFromWatch: Bool { source == Self.watchSource }
 
     var orderedLaps: [Lap] {
         laps.sorted { $0.index < $1.index }

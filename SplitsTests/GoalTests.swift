@@ -113,7 +113,7 @@ struct GoalEngineTests {
     }
 
     @Test func announcerPhraseForGoal() {
-        let announcer = Announcer()
+        let announcer = AnnouncementScript()
         let fast = LapRecord(index: 0, kind: .run, target: .distance(400), distance: 400, duration: 88, goalValue: 90, ordinal: 3)
         #expect(announcer.resultPhrase(for: fast) == "3번째 달리기, 1분 28초, 목표보다 2초 빠름")
         let rest = LapRecord(index: 1, kind: .rest, target: .duration(60), distance: 0, duration: 60, goalValue: 50, ordinal: 1)
