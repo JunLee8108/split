@@ -37,7 +37,9 @@ struct SyncPayloadTests {
 
     @Test func sameContextEncodesToSameBytes() throws {
         let context = WatchContext(plans: [], lastPlanName: "", settings: settings)
-        #expect(try SyncCoding.encode(context) == SyncCoding.encode(context))
+        let first = try SyncCoding.encode(context)
+        let second = try SyncCoding.encode(context)
+        #expect(first == second)
     }
 
     @Test func workoutSummaryRoundTrips() throws {
