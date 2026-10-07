@@ -24,6 +24,10 @@ struct SplitsApp: App {
         }
     }()
 
+    init() {
+        PhoneSync.shared.start(container: sharedModelContainer)
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
