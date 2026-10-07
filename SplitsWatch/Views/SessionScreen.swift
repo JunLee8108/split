@@ -24,7 +24,8 @@ struct SessionScreen: View {
     private var engine: WorkoutEngine { session.engine }
 
     var body: some View {
-        Group {
+        // Group이 아니라 ZStack. Group에 붙인 .task는 자식마다 붙어서 화면이 바뀔 때마다 카운트다운이 다시 돈다.
+        ZStack {
             if let summary {
                 SummaryPage(
                     summary: summary,
@@ -68,6 +69,7 @@ struct SessionScreen: View {
 
     /// 3초 세는 동안 GPS와 심박 센서를 깨운다. 준비가 늦으면 끝날 때까지 기다린다.
     private func runCountdown() async {
+        guard engine.state == .idle else { return }
         let preparing = Task { await session.prepare() }
         for value in stride(from: 3, through: 1, by: -1) {
             countdown = value

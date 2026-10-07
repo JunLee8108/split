@@ -24,6 +24,8 @@ final class PhoneSync {
         self.container = container
 
         link.onStateChange = { [weak self] in
+            // 워치를 바꿨거나 워치 앱을 새로 깔았다. 같은 내용이라도 다시 보낸다.
+            self?.lastSent = nil
             self?.schedulePush()
         }
         link.onWorkoutFile = { [weak self] data in

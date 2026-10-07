@@ -248,8 +248,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				BF2EBC223048785200B56154 /* SplitsWatch */,
 				BF2EBC203048785200B56154 /* Shared */,
+				BF2EBC223048785200B56154 /* SplitsWatch */,
 			);
 			name = SplitsWatch;
 			packageProductDependencies = (
@@ -658,6 +658,7 @@
 				CODE_SIGN_ENTITLEMENTS = SplitsWatch/SplitsWatch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4QKAJX523X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SplitsWatch/Info.plist;
@@ -692,6 +693,7 @@
 				CODE_SIGN_ENTITLEMENTS = SplitsWatch/SplitsWatch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4QKAJX523X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SplitsWatch/Info.plist;
