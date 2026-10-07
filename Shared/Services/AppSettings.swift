@@ -55,3 +55,34 @@ enum AppSettings {
         UserDefaults.standard.bool(forKey: saveToHealthKey)
     }
 }
+
+/// 세션 동작에 필요한 설정 묶음. iPhone이 워치로 보내고, 워치는 받은 값을 자기 UserDefaults에 같은 키로 쓴다.
+/// 그래서 워치에서도 AppSettings를 그대로 읽는다.
+nonisolated struct SessionSettings: Hashable, Codable, Sendable {
+    var unit: DistanceUnit
+    var voiceEnabled: Bool
+    var countdownSeconds: Int
+    var timeMilestonesEnabled: Bool
+    var saveToHealth: Bool
+}
+
+extension AppSettings {
+    static var session: SessionSettings {
+        SessionSettings(
+            unit: distanceUnit,
+            voiceEnabled: voiceEnabled,
+            countdownSeconds: countdownSeconds,
+            timeMilestonesEnabled: timeMilestonesEnabled,
+            saveToHealth: saveToHealth
+        )
+    }
+
+    static func store(_ settings: SessionSettings) {
+        let defaults = UserDefaults.standard
+        defaults.set(settings.unit.rawValue, forKey: distanceUnitKey)
+        defaults.set(settings.voiceEnabled, forKey: voiceEnabledKey)
+        defaults.set(settings.countdownSeconds, forKey: countdownSecondsKey)
+        defaults.set(settings.timeMilestonesEnabled, forKey: timeMilestonesKey)
+        defaults.set(settings.saveToHealth, forKey: saveToHealthKey)
+    }
+}

@@ -58,6 +58,11 @@
 			path = SplitsUITests;
 			sourceTree = "<group>";
 		};
+		BF2EBC203048785200B56154 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				BF2EBBF33048785000B56154 /* Splits */,
+				BF2EBC203048785200B56154 /* Shared */,
 				BF2EBC053048785200B56154 /* SplitsTests */,
 				BF2EBC0F3048785200B56154 /* SplitsUITests */,
 				BF2EBBF23048785000B56154 /* Products */,
@@ -122,6 +128,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				BF2EBBF33048785000B56154 /* Splits */,
+				BF2EBC203048785200B56154 /* Shared */,
 			);
 			name = Splits;
 			packageProductDependencies = (

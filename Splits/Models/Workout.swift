@@ -6,15 +6,6 @@
 import Foundation
 import SwiftData
 
-/// 경로의 한 점. 구조체 배열을 JSON으로 직렬화해 Workout.routeData에 저장한다.
-nonisolated struct RoutePoint: Codable, Hashable, Sendable {
-    var latitude: Double
-    var longitude: Double
-    var timestamp: Date
-    /// 이 점이 속한 스텝의 index.
-    var stepIndex: Int
-}
-
 /// 목록 스케치용 축소 경로. 전체 경로(수천 점) 대신 이것만 읽는다.
 nonisolated struct RoutePreview: Codable, Hashable, Sendable {
     var points: [RoutePoint]
