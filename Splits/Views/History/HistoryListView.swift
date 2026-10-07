@@ -125,6 +125,12 @@ struct WorkoutCard: View {
                     Text(workout.planName)
                         .font(.headline)
                         .lineLimit(1)
+                    if workout.isFromWatch {
+                        Image(systemName: "applewatch")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel("Apple Watch에서 기록")
+                    }
                     Spacer()
                     Text(workout.startedAt, format: .dateTime.month().day().hour().minute())
                         .font(.caption)

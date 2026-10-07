@@ -76,7 +76,7 @@ struct SettingsView: View {
                         if healthAuthorizationFailed {
                             Text("건강 앱에서 Splits의 운동 쓰기 권한을 허용해야 저장됩니다. 설정 > 건강 > 데이터 접근 및 기기에서 바꿀 수 있어요.")
                         } else {
-                            Text("저장한 세션이 러닝 운동으로 건강 앱에 기록됩니다. 경로도 함께 저장돼요.")
+                            Text("저장한 세션이 러닝 운동으로 건강 앱에 기록됩니다. 경로도 함께 저장돼요. Apple Watch에서 달린 세션은 워치가 심박수와 함께 저장합니다.")
                         }
                     }
                 }

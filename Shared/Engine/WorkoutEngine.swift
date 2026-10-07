@@ -16,7 +16,7 @@ nonisolated enum WorkoutState: String, Sendable {
     case finished
 }
 
-nonisolated struct WorkoutSummary: Hashable, Sendable {
+nonisolated struct WorkoutSummary: Hashable, Codable, Sendable {
     var planName: String
     var startedAt: Date
     var endedAt: Date

@@ -251,44 +251,13 @@ struct SessionMetrics: View {
     // MARK: 1층
 
     private var primary: (value: String, label: String) {
-        guard let tracker else { return ("완료", " ") }
-        switch tracker.step.target {
-        case .distance:
-            return (Formatters.distance(tracker.remaining.rounded(), unit: unit), "남은 거리")
-        case .duration:
-            return (Formatters.clock(tracker.remaining.rounded(.up)), "남은 시간")
-        }
+        SessionReadout.primary(tracker, unit: unit)
     }
 
     // MARK: 2층
 
     private var secondary: (value: String, label: String) {
-        guard let tracker else { return (" ", " ") }
-        let step = tracker.step
-        if let goal = step.goalValue {
-            let pace = Formatters.pace(step.goalPace, unit: unit)
-            switch step.target {
-            case .distance:
-                let remaining = goal - tracker.elapsed
-                if remaining >= 0 {
-                    return (Formatters.clock(remaining.rounded(.up)), "목표까지 · \(pace)")
-                }
-                return ("+\(Formatters.clock(-remaining))", "목표 초과 · \(pace)")
-            case .duration:
-                let remaining = goal - tracker.distance
-                if remaining >= 0 {
-                    return (Formatters.distance(remaining.rounded(), unit: unit), "목표까지 · \(pace)")
-                }
-                return ("+\(Formatters.distance(-remaining, unit: unit))", "목표 초과 · \(pace)")
-            }
-        }
-        // 목표가 없으면 1층과 반대 축을 보여 준다. 거리 구간이면 경과 시간, 시간 구간이면 달린 거리.
-        switch step.target {
-        case .distance:
-            return (Formatters.clock(tracker.elapsed), "구간 경과")
-        case .duration:
-            return (Formatters.distance(tracker.distance, unit: unit), "구간 거리")
-        }
+        SessionReadout.secondary(tracker, unit: unit)
     }
 
     // MARK: 3층

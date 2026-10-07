@@ -10,7 +10,7 @@
 | 항목 | 결정 |
 |---|---|
 | 구간 종료 기준 | 거리·시간 둘 다. 구간마다 선택. 두 번 탭으로 수동 넘김 가능 |
-| Apple Watch | 2차 |
+| Apple Watch | 2차 → 워치 전용 앱으로 진행 (docs/WATCH_PLAN.md) |
 | HealthKit | 1차 마지막 단계에 워크아웃 저장만 |
 | 동기화 | 1차 로컬, 2차 CloudKit |
 | 기기 | iPhone 세로 모드만 (iPad·가로 제거) |
@@ -142,3 +142,4 @@ SplitsTests/       SegmentTrackerTests, WorkoutEngineTests, PaceMathTests
 - [x] 남은 시간 안내 — 시간 구간에서 1분·30초·10초 이정표 음성(구간 길이−3초보다 짧은 것만, 카운트다운 시작보다 큰 것만, 늦은 틱은 가장 가까운 것 하나만), 설정 토글
 - [x] 인트로 — 콜드 스타트 1.7초. 스톱워치 숫자가 올라가다 0.9초에 스플릿(바 끝이 청록, 햅틱), 숫자가 작아지고 SPLITS 한 글자씩 + 청록 점. 탭으로 건너뜀, 동작 줄이기면 페이드만. 런치 스크린 배경을 같은 어두운 색으로
 - [x] 공유 1차 — ShareableWorkout 스냅샷, 텍스트 요약(ShareText), 공유 카드(ShareCardView, 피드 4:5·스토리 9:16, ImageRenderer ×3), 공유 시트(미리보기·크기·이미지/텍스트 ShareLink). 진입점: 기록 상세 툴바, 세션 요약, 기록 목록 길게 누르기
+- [x] Apple Watch 앱 — 엔진·모델·포매터를 Shared/로 옮겨 두 타깃이 같이 쓴다. 워치에서 단독 세션(HKWorkoutSession, GPS, 진동·음성, 심박), iPhone → 워치 플랜·설정 동기화, 워치 → iPhone 기록 전송. 계획과 체크리스트는 docs/WATCH_PLAN.md

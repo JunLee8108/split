@@ -3,7 +3,8 @@
 //  Splits
 //
 //  CoreLocation 래퍼. iOS 17의 CLLocationUpdate.liveUpdates()를 쓰고,
-//  CLBackgroundActivitySession으로 화면이 꺼져도 업데이트를 이어받는다.
+//  iPhone에서는 CLBackgroundActivitySession으로 화면이 꺼져도 업데이트를 이어받는다.
+//  워치에서는 HKWorkoutSession이 백그라운드 실행을 맡는다.
 //  거리 계산은 하지 않는다. 점을 LocationSample로 바꿔 넘길 뿐이다.
 //
 
@@ -21,7 +22,9 @@ final class LocationManager {
     var onSample: ((LocationSample) -> Void)?
 
     private var updatesTask: Task<Void, Never>?
+    #if os(iOS)
     private var backgroundSession: CLBackgroundActivitySession?
+    #endif
 
     func start() {
         guard !isTracking else { return }
@@ -29,8 +32,10 @@ final class LocationManager {
         isAuthorizationDenied = false
         isLocationUnavailable = false
 
+        #if os(iOS)
         // 포그라운드에서 만들어 두면 백그라운드로 가도 위치 업데이트가 유지된다.
         backgroundSession = CLBackgroundActivitySession()
+        #endif
 
         updatesTask = Task { [weak self] in
             do {
@@ -47,8 +52,10 @@ final class LocationManager {
     func stop() {
         updatesTask?.cancel()
         updatesTask = nil
+        #if os(iOS)
         backgroundSession?.invalidate()
         backgroundSession = nil
+        #endif
         isTracking = false
     }
 

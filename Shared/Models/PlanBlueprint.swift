@@ -7,7 +7,7 @@
 
 import Foundation
 
-nonisolated struct SegmentSpec: Hashable, Sendable {
+nonisolated struct SegmentSpec: Hashable, Codable, Sendable {
     var kind: StepKind
     var target: SegmentTarget
     /// 거리 구간이면 목표 시간(초), 시간 구간이면 목표 거리(미터). 없으면 nil.
@@ -38,7 +38,7 @@ nonisolated struct WorkoutStep: Hashable, Sendable {
     var goalPace: TimeInterval? { GoalMath.pace(target: target, goalValue: goalValue) }
 }
 
-nonisolated struct PlanBlueprint: Hashable, Sendable {
+nonisolated struct PlanBlueprint: Hashable, Codable, Sendable {
     var name: String
     var segments: [SegmentSpec]
     var repeatCount: Int
