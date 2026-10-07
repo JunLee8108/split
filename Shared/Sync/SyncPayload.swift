@@ -23,6 +23,8 @@ nonisolated enum SyncCoding {
     static let kindKey = "kind"
     /// 워치 → iPhone. 저장한 WorkoutSummary 하나. 경로가 길면 수백 KB라 파일로 보낸다.
     static let workoutKind = "workout"
+    /// 보낸 쪽 파일 이름. 전송이 끝나면 이 이름으로 outbox에서 지운다.
+    static let fileIDKey = "fileID"
 
     /// 키 순서를 고정한다. 같은 내용이면 같은 바이트가 나와 중복 전송을 거를 수 있다.
     static func encode<T: Encodable>(_ value: T) throws -> Data {

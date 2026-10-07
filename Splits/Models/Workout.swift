@@ -46,6 +46,8 @@ final class Workout {
     var routeData: Data
     /// RoutePreview JSON. 저장 시 만들고, 옛 기록은 목록이 처음 볼 때 채운다.
     var routePreviewData: Data?
+    /// 어디서 기록했는지. iPhone 기록과 옛 기록은 nil, 워치에서 받은 기록은 `watchSource`.
+    var source: String?
 
     @Relationship(deleteRule: .cascade, inverse: \Lap.workout)
     var laps: [Lap]
@@ -81,6 +83,10 @@ final class Workout {
         }
         set { routePreviewData = try? JSONEncoder().encode(newValue) }
     }
+
+    static let watchSource = "watch"
+
+    var isFromWatch: Bool { source == Self.watchSource }
 
     var orderedLaps: [Lap] {
         laps.sorted { $0.index < $1.index }

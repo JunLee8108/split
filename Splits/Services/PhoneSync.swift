@@ -2,7 +2,7 @@
 //  PhoneSync.swift
 //  Splits
 //
-//  iPhone 쪽 워치 연결. 플랜과 설정이 바뀌면 워치로 보낸다.
+//  iPhone 쪽 워치 연결. 플랜과 설정이 바뀌면 워치로 보내고, 워치에서 저장한 세션을 기록에 넣는다.
 //  워치가 보낸 파일이 오면 시스템이 앱을 백그라운드로 깨운다. 그래서 화면이 아니라 앱 init에서 시작한다.
 //
 
@@ -25,6 +25,9 @@ final class PhoneSync {
 
         link.onStateChange = { [weak self] in
             self?.schedulePush()
+        }
+        link.onWorkoutFile = { [weak self] data in
+            self?.importWorkout(data)
         }
         link.activate()
 
@@ -65,5 +68,21 @@ final class PhoneSync {
         } catch {
             // 다음 변경이나 다음 실행 때 다시 보낸다.
         }
+    }
+
+    /// 워치에서 저장한 세션. 건강 앱에는 워치가 이미 남겼으므로 여기서는 기록에만 넣는다.
+    /// 같은 시각에 시작한 기록이 있으면 같은 세션이 두 번 온 것으로 보고 건너뛴다.
+    private func importWorkout(_ data: Data) {
+        guard let container, let summary = try? SyncCoding.decode(WorkoutSummary.self, from: data) else { return }
+        let context = container.mainContext
+        let startedAt = summary.startedAt
+        let sameStart = FetchDescriptor<Workout>(predicate: #Predicate { $0.startedAt == startedAt })
+        guard (try? context.fetchCount(sameStart)) == 0 else { return }
+
+        let workout = Workout.save(summary, into: context)
+        workout.source = Workout.watchSource
+        try? context.save()
+        // 워치에서 고른 플랜이 양쪽 모두 맨 위로 온다. 바뀐 값은 다음 push로 워치에도 간다.
+        UserDefaults.standard.set(summary.planName, forKey: AppSettings.lastPlanNameKey)
     }
 }

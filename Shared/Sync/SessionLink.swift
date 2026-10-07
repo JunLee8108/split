@@ -16,8 +16,8 @@ nonisolated final class SessionLink: NSObject, WCSessionDelegate, @unchecked Sen
     var onContext: (@MainActor (Data) -> Void)?
     /// 상대가 보낸 세션 파일의 내용.
     var onWorkoutFile: (@MainActor (Data) -> Void)?
-    /// 내가 보낸 파일 전송이 끝났다. 성공 여부와 함께.
-    var onFileSent: (@MainActor (URL, Bool) -> Void)?
+    /// 내가 보낸 파일 전송이 끝났다. 보낼 때 붙인 파일 ID와 성공 여부.
+    var onFileSent: (@MainActor (String, Bool) -> Void)?
 
     private var session: WCSession { WCSession.default }
 
@@ -43,15 +43,18 @@ nonisolated final class SessionLink: NSObject, WCSessionDelegate, @unchecked Sen
         try session.updateApplicationContext([SyncCoding.payloadKey: data])
     }
 
-    /// 파일은 전송이 끝날 때까지 지우지 않는다. 끝나면 onFileSent가 온다.
+    /// 파일 이름을 ID로 메타데이터에 싣는다. 끝나면 그 ID로 onFileSent가 온다.
     func transferWorkoutFile(_ url: URL) {
-        session.transferFile(url, metadata: [SyncCoding.kindKey: SyncCoding.workoutKind])
+        session.transferFile(url, metadata: [
+            SyncCoding.kindKey: SyncCoding.workoutKind,
+            SyncCoding.fileIDKey: url.lastPathComponent,
+        ])
     }
 
-    /// 아직 보내는 중인 파일들.
-    var outstandingFileURLs: [URL] {
+    /// 아직 보내는 중인 파일의 ID.
+    var outstandingFileIDs: Set<String> {
         guard isActivated else { return [] }
-        return session.outstandingFileTransfers.map(\.file.fileURL)
+        return Set(session.outstandingFileTransfers.compactMap { $0.file.metadata?[SyncCoding.fileIDKey] as? String })
     }
 
     // MARK: WCSessionDelegate
@@ -83,10 +86,10 @@ nonisolated final class SessionLink: NSObject, WCSessionDelegate, @unchecked Sen
     }
 
     func session(_ session: WCSession, didFinish fileTransfer: WCSessionFileTransfer, error: Error?) {
-        let url = fileTransfer.file.fileURL
+        guard let id = fileTransfer.file.metadata?[SyncCoding.fileIDKey] as? String else { return }
         let succeeded = error == nil
         Task { @MainActor in
-            self.onFileSent?(url, succeeded)
+            self.onFileSent?(id, succeeded)
         }
     }
 

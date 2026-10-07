@@ -80,8 +80,9 @@ final class WatchWorkoutSession {
         return summary
     }
 
-    /// 요약 화면에서 저장. 건강 앱에는 설정이 켜져 있을 때만 남긴다.
+    /// 요약 화면에서 저장. iPhone 기록으로 보내고, 건강 앱에는 설정이 켜져 있을 때만 남긴다.
     func save(_ summary: WorkoutSummary) async {
+        WatchSync.shared.send(summary)
         if AppSettings.saveToHealth {
             await recorder.save(summary)
         } else {
